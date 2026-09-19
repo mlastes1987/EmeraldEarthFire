@@ -11,7 +11,7 @@
 #define I_BERRY_EV_JUMP                 GEN_LATEST  // In Gen4 only, EV-lowering Berries lower a stat's EVs to 100 if they are above 100.
 #define I_GRISEOUS_ORB_FORM_CHANGE      GEN_LATEST  // In Gen9+, the Griseous Orb no longer changes Giratina's form when held.
 #define I_GEM_BOOST_POWER               GEN_LATEST  // In Gen6+, the power multiplier of Gems is 1.3x instead of 1.5x.
-#define I_USE_EVO_HELD_ITEMS_FROM_BAG   FALSE       // If set to TRUE, items such as the Electirizer can be used from the bag to evolve a Pokémon like in PLA.
+#define I_USE_EVO_HELD_ITEMS_FROM_BAG   TRUE       // If set to TRUE, items such as the Electirizer can be used from the bag to evolve a Pokémon like in PLA.
 #define I_TYPE_BOOST_POWER              GEN_LATEST  // In Gen4+, type-enhancing held items increase the power of moves by 1.2x instead of 1.1x (1.05x in the case of Sea Incense).
 #define I_SELL_VALUE_FRACTION           GEN_LATEST  // In Gen9+, items sell for 1/4 of their value instead of 1/2.
 #define I_PRICE                         GEN_LATEST  // Some items have varied in value across generations. See src/data/items.h for values.
@@ -23,13 +23,22 @@
 #define I_LAX_INCENSE_BOOST             GEN_LATEST  // In Gen4+, Lax Incense lowers accuracy by 10% instead of 5%.
 
 // TM config
-#define I_REUSABLE_TMS          FALSE       // In Gens5-8, TMs are reusable. Setting this to TRUE will make all vanilla TMs reusable, though they can also be cherry-picked by setting their importance to 1.
+#define I_REUSABLE_TMS          TRUE       // In Gens5-8, TMs are reusable. Setting this to TRUE will make all vanilla TMs reusable, though they can also be cherry-picked by setting their importance to 1.
 
 // Exp. Share config
 // To use this feature, replace the 0 with the flag ID you're assigning it to.
 // Eg: Replace with FLAG_UNUSED_0x264 so you can use that flag to toggle the feature.
+#if GAME_VERSION == EMERALD
+
 #define I_EXP_SHARE_FLAG        0           // If this flag is set, every Pokémon in the party will gain experience, regardless if they participated in the battle or not.
 #define I_EXP_SHARE_ITEM        GEN_5       // In Gen6+, the Exp. Share is a Key item that toggles the effect described above.
+
+#else
+
+#define I_EXP_SHARE_FLAG        0           // If this flag is set, every Pokémon in the party will gain experience, regardless if they participated in the battle or not.
+#define I_EXP_SHARE_ITEM        GEN_5       // In Gen6+, the Exp. Share is a Key item that toggles the effect described above.
+
+#endif
 
 // Repel/Lure config
 // These two settings are both independent and complementary.
@@ -41,7 +50,16 @@
 #define I_SHOW_NO_ID_TRAINER        DISABLED_ON_RELEASE   // If TRUE, object events with a trainer type but no visible trainer id will be shown with a question mark. You may want to add vsseeker_rematchid TRAINER_ID as the top of the script to let the VS seeker know what reaction it's supposed to show.
 
 // ORAS Dowsing Machine
+#if GAME_VERSION == EMERALD
+
 #define I_ORAS_DOWSING_FLAG         0       // Replace 0 with an unused flag to enable the Dowsing Machine mechanic from ORAS.
+
+#else
+
+#define I_ORAS_DOWSING_FLAG         0       // Replace 0 with an unused flag to enable the Dowsing Machine mechanic from ORAS.
+
+#endif
+
 #define I_ORAS_DOWSING_SOUNDS       TRUE    // If set to TRUE, the Dowsing Machine will make sounds based on how far away the hidden item is.
 #define I_ORAS_DOWSING_COLOR_PAL    15      // The color within the palette that will change based on proximity to the item.
 

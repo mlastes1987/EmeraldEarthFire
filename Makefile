@@ -1,21 +1,21 @@
 GAME_VERSION ?= EMERALD
 TITLE        ?= POKEMON EMER
 GAME_CODE    ?= BPEE
-BUILD_NAME   ?= emerald
+BUILD_NAME   ?= Emerald
 MAP_VERSION  ?= emerald
 
 ifeq (firered, $(or $(BUILD), $(MAKECMDGOALS)))
   	GAME_VERSION 	:= FIRERED
 	TITLE       	:= POKEMON FIRE
 	GAME_CODE   	:= BPRE
-	BUILD_NAME  	:= firered
+	BUILD_NAME  	:= EmeraldFire
 	MAP_VERSION 	:= firered
 else
 ifeq (leafgreen, $(or $(BUILD), $(MAKECMDGOALS)))
 	GAME_VERSION 	:= LEAFGREEN
 	TITLE       	:= POKEMON LEAF
 	GAME_CODE   	:= BPGE
-	BUILD_NAME  	:= leafgreen
+	BUILD_NAME  	:= EmeraldEarth
 	MAP_VERSION 	:= firered
 endif
 endif
@@ -26,7 +26,7 @@ REVISION    := 0
 KEEP_TEMPS  ?= 0
 
 # `File name`.gba
-FILE_NAME := poke$(BUILD_NAME)
+FILE_NAME := $(BUILD_NAME)
 BUILD_DIR := build
 
 # Compares the ROM to a checksum of the original - only makes sense using when non-modern
@@ -388,7 +388,7 @@ clean-assets:
 tidy: tidymodern tidycheck tidydebug tidyrelease
 
 tidymodern:
-	rm -f poke*.gba poke*.elf poke*.map
+	rm -f $(FILE_NAME)*.gba $(FILE_NAME)*.elf $(FILE_NAME)*.map
 	rm -rf $(OBJ_DIR_NAME)
 
 tidycheck:
