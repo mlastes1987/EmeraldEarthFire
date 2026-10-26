@@ -280,11 +280,12 @@ static const union AnimCmd *const sRegionMapPlayerIconAnimTable[] =
 };
 
 // Event islands that don't appear on map. (Southern Island does)
+// BIRTH_ISLAND and NAVEL_ROCK used to be listed here as well: they were the HOENN sections, and
+// they went with the HOENN island maps (KANTO_IN_EMERALD.md, "One island, one dungeon"). The
+// KANTO sections of the same names are on the map itself, not off it.
 static const mapsec_u8_t sMapSecIdsOffMap[] =
 {
-    MAPSEC_BIRTH_ISLAND,
-    MAPSEC_FARAWAY_ISLAND,
-    MAPSEC_NAVEL_ROCK
+    MAPSEC_FARAWAY_ISLAND
 };
 
 static const u16 sRegionMapFramePal[] = INCGFX_U16("graphics/pokenav/region_map/frame.png", ".gbapal");

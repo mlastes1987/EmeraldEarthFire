@@ -13,6 +13,12 @@
 #define SEAGALLOP_NAVEL_ROCK       9
 #define SEAGALLOP_BIRTH_ISLAND    10
 
+// The HOENN crossing. It sits after the SEVII range on purpose: the destination menu
+// (DrawSeagallopDestinationMenu) builds its pages by cycling SEAGALLOP_VERMILION_CITY ..
+// SEAGALLOP_SEVEN_ISLAND, so an id past SEVEN_ISLAND is never offered as a Sevii
+// destination and the pages stay exactly as they are.
+#define SEAGALLOP_LILYCOVE_CITY   11
+
 #define SEAGALLOP_MORE           254
 
 #endif //GUARD_CONSTANTS_SEAGALLOP_H

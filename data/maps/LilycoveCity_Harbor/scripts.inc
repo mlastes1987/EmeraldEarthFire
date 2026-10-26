@@ -56,16 +56,29 @@ LilycoveCity_Harbor_EventScript_GoToSouthernIsland::
 	release
 	end
 
+@ The S.S. TIDAL's ticket berths sail to the *KANTO* copies of the two islands --
+@ MAP_NAVEL_ROCK_HARBOR_FRLG / MAP_BIRTH_ISLAND_HARBOR_FRLG -- which are also where the
+@ SEAGALLOP from VERMILION and the KANTO liner at this harbour land. That is deliberate:
+@ the HOENN and KANTO dungeons are complete duplicates of each other holding the *same*
+@ legendaries behind *different* flags, so as shipped an Emerald player could catch LUGIA,
+@ HO-OH and DEOXYS twice over -- once in each cave -- and LILYCOVE offered two berths
+@ named NAVEL ROCK that were not the same place. One island, one dungeon, one name: the
+@ KANTO set is canonical because the FRLG set is the only one a FireRed build can reach
+@ (`sSeag` names it, and the HOENN map groups are NULL there). The HOENN maps are left
+@ built and intact but unreachable; re-pointing these two warps is the whole revert.
+@
+@ (8, 5) is the FRLG harbours' own arrival tile -- the one `sSeag` gives the SEAGALLOP --
+@ not the (8, 4) these warps used, because the two harbours are different layouts.
 LilycoveCity_Harbor_EventScript_GoToNavelRock::
 	call LilycoveCity_Harbor_EventScript_BoardFerry
-	warp MAP_NAVEL_ROCK_HARBOR, 8, 4
+	warp MAP_NAVEL_ROCK_HARBOR_FRLG, 8, 5
 	waitstate
 	release
 	end
 
 LilycoveCity_Harbor_EventScript_GoToBirthIsland::
 	call LilycoveCity_Harbor_EventScript_BoardFerry
-	warp MAP_BIRTH_ISLAND_HARBOR, 8, 4
+	warp MAP_BIRTH_ISLAND_HARBOR_FRLG, 8, 5
 	waitstate
 	release
 	end
@@ -213,7 +226,7 @@ LilycoveCity_Harbor_EventScript_AuroraTicketFirstTime::
 LilycoveCity_Harbor_EventScript_GoToBirthIslandFirstTime::
 	closemessage
 	call LilycoveCity_Harbor_EventScript_BoardFerryWithSailor
-	warp MAP_BIRTH_ISLAND_HARBOR, 8, 4
+	warp MAP_BIRTH_ISLAND_HARBOR_FRLG, 8, 5
 	waitstate
 	release
 	end
@@ -271,7 +284,7 @@ LilycoveCity_Harbor_EventScript_MysticTicketFirstTime::
 LilycoveCity_Harbor_EventScript_GoToNavelRockFirstTime::
 	closemessage
 	call LilycoveCity_Harbor_EventScript_BoardFerryWithSailor
-	warp MAP_NAVEL_ROCK_HARBOR, 8, 4
+	warp MAP_NAVEL_ROCK_HARBOR_FRLG, 8, 5
 	waitstate
 	release
 	end
@@ -583,3 +596,143 @@ LilycoveCity_Harbor_Text_SailorFerryAvailable:
 	.string "The folks at the SHIPYARD in SLATEPORT\n"
 	.string "must've worked extra hard.\p"
 	.string "Well, it's my turn to get busy now!$"
+
+@ Sea crossing from Hoenn to Kanto. It sails with the SEAGALLOP cut-scene, the same
+@ way the Kanto side launches its Sevii trips: set 8004/8006 and fall into
+@ EventScript_SailToDest. The Kanto maps are only built into a non-FRLG ROM, so the
+@ crossing is unreachable in an FRLG build, but this file still assembles there.
+LilycoveCity_Harbor_EventScript_KantoSailor::
+	lock
+	faceplayer
+#if !IS_FRLG
+@ The crossing is a CHAMPION's errand at this end too, the way VERMILION's SEAGALLOP says
+@ CHAMPIONS only at the other. Without this the sailor is the one door into KANTO that
+@ opens before the LEAGUE, and the letter that sends the player here arrives after it.
+	goto_if_unset FLAG_SYS_GAME_CLEAR, LilycoveCity_Harbor_EventScript_KantoSailorNoPassage
+@ A MYSTIC or AURORA TICKET buys a berth to the event island it names as well as the
+@ run to the KANTO mainland. The tickets are tested exactly as VERMILION's harbour
+@ tests them -- the distribution flag and the item -- so a port that opens at one end
+@ of the crossing opens at the other.
+	call VermilionCity_EventScript_CheckHasMysticTicket
+	goto_if_eq VAR_RESULT, TRUE, LilycoveCity_Harbor_EventScript_HasMysticTicket
+	call VermilionCity_EventScript_CheckHasAuroraTicket
+	goto_if_eq VAR_RESULT, TRUE, LilycoveCity_Harbor_EventScript_HasAuroraTicket
+@ Holding neither ticket is the one case where the two berths have to be *described*
+@ rather than offered, so this is where the hint goes.
+	msgbox LilycoveCity_Harbor_Text_KantoSailorWelcomeNoTickets, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, LilycoveCity_Harbor_EventScript_KantoSailorDeclined
+	closemessage
+	goto EventScript_SailToKanto
+#endif // !IS_FRLG
+	msgbox LilycoveCity_Harbor_Text_KantoSailorWelcome, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, LilycoveCity_Harbor_EventScript_KantoSailorDeclined
+	closemessage
+	release
+	end
+
+#if !IS_FRLG
+LilycoveCity_Harbor_EventScript_HasMysticTicket::
+	call VermilionCity_EventScript_CheckHasAuroraTicket
+	goto_if_eq VAR_RESULT, TRUE, LilycoveCity_Harbor_EventScript_HasBothTickets
+	message LilycoveCity_Harbor_Text_WhereShallISailYou
+	waitmessage
+	multichoice 13, 6, MULTI_SAIL_DEST_NAVEL, FALSE
+	switch VAR_RESULT
+	case 0, EventScript_SailToKanto
+	case 1, LilycoveCity_Harbor_EventScript_SailToNavelRock
+	case 2, EventScript_CancelSail
+	case MULTI_B_PRESSED, EventScript_CancelSail
+	end
+
+LilycoveCity_Harbor_EventScript_HasAuroraTicket::
+	message LilycoveCity_Harbor_Text_WhereShallISailYou
+	waitmessage
+	multichoice 13, 6, MULTI_SAIL_DEST_BIRTH, FALSE
+	switch VAR_RESULT
+	case 0, EventScript_SailToKanto
+	case 1, LilycoveCity_Harbor_EventScript_SailToBirthIsland
+	case 2, EventScript_CancelSail
+	case MULTI_B_PRESSED, EventScript_CancelSail
+	end
+
+LilycoveCity_Harbor_EventScript_HasBothTickets::
+	message LilycoveCity_Harbor_Text_WhereShallISailYou
+	waitmessage
+	multichoice 13, 5, MULTI_SAIL_DEST_NAVEL_BIRTH, FALSE
+	switch VAR_RESULT
+	case 0, EventScript_SailToKanto
+	case 1, LilycoveCity_Harbor_EventScript_SailToNavelRock
+	case 2, LilycoveCity_Harbor_EventScript_SailToBirthIsland
+	case 3, EventScript_CancelSail
+	case MULTI_B_PRESSED, EventScript_CancelSail
+	end
+
+@ The liner does not change which KANTO port it calls at, so these file LILYCOVE as the
+@ origin and the event island as the destination, exactly as the VERMILION trip files
+@ its pair. That pair is what the sSeag table, the direction bit and the HI-SPEED
+@ number are all keyed on.
+LilycoveCity_Harbor_EventScript_SailToNavelRock::
+	setvar VAR_0x8004, SEAGALLOP_LILYCOVE_CITY
+	setvar VAR_0x8006, SEAGALLOP_NAVEL_ROCK
+	goto EventScript_SailToDest
+	end
+
+LilycoveCity_Harbor_EventScript_SailToBirthIsland::
+	setvar VAR_0x8004, SEAGALLOP_LILYCOVE_CITY
+	setvar VAR_0x8006, SEAGALLOP_BIRTH_ISLAND
+	goto EventScript_SailToDest
+	end
+#endif // !IS_FRLG
+
+LilycoveCity_Harbor_EventScript_KantoSailorDeclined::
+	msgbox LilycoveCity_Harbor_Text_KantoSailorDeclined, MSGBOX_DEFAULT
+	release
+	end
+
+#if !IS_FRLG
+@ The refusal belongs to the crossing, so it is guarded with the rest of it: a FireRed
+@ build's LILYCOVE keeps the vanilla harbour and this script would be dead weight there.
+LilycoveCity_Harbor_EventScript_KantoSailorNoPassage::
+	msgbox LilycoveCity_Harbor_Text_KantoSailorNoPassage, MSGBOX_DEFAULT
+	release
+	end
+#endif // !IS_FRLG
+
+LilycoveCity_Harbor_Text_KantoSailorWelcome:
+	.string "Ahoy! I run the crossing to KANTO.\p"
+	.string "Care to sail to VERMILION CITY?$"
+
+LilycoveCity_Harbor_Text_KantoSailorDeclined:
+	.string "Suit yourself. The tide waits\n"
+	.string "for no one.$"
+
+#if !IS_FRLG
+LilycoveCity_Harbor_Text_WhereShallISailYou:
+	.string "Where shall I sail you today?$"
+
+@ Shown only to a player holding neither ticket: the berths exist, the ticket each needs is
+@ named, and the place that issues them is named, so a closed berth is discoverable rather
+@ than silent. VERMILION's CHAMPION welcome is what actually hands the tickets over -- see
+@ VermilionCity_EventScript_GiveEventTickets.
+LilycoveCity_Harbor_Text_KantoSailorWelcomeNoTickets:
+	.string "Ahoy! I run the crossing to KANTO.\p"
+	.string "I have berths to NAVEL ROCK and\n"
+	.string "BIRTH ISLAND too, but they sail on\l"
+	.string "a MYSTIC or AURORA TICKET.\p"
+	.string "VERMILION's harbour hands those out\n"
+	.string "to a CHAMPION of HOENN.\p"
+	.string "Care to sail to VERMILION CITY?$"
+
+@ Shown to anyone who asks about KANTO before the LEAGUE. It names the CHAMPION rule and
+@ the PROFESSOR waiting on the far side, so the crossing is discoverable from this pier
+@ rather than only from the letter that opens it.
+LilycoveCity_Harbor_Text_KantoSailorNoPassage:
+	.string "Ahoy! The ferry to KANTO?\n"
+	.string "Not on my watch, friend.\p"
+	.string "Orders from the far side: that\n"
+	.string "crossing is for a CHAMPION.\p"
+	.string "They say a POKéMON PROFESSOR\n"
+	.string "over there is waiting for one.\p"
+	.string "Come back once you've beaten\n"
+	.string "HOENN's LEAGUE.$"
+#endif // !IS_FRLG

@@ -57,42 +57,42 @@ Route23_EventScript_BadgeGuard::
 	end
 
 Route23_EventScript_CheckBoulderBadge::
-	goto_if_set FLAG_BADGE01_GET, Route23_EventScript_RecognizeBoulderBadge
+	goto_if_set FLAG_KANTO_BADGE01_GET, Route23_EventScript_RecognizeBoulderBadge
 	goto Route23_EventScript_MissingBoulderBadge
 	end
 
 Route23_EventScript_CheckCascadeBadge::
-	goto_if_set FLAG_BADGE02_GET, Route23_EventScript_RecognizeBadge
+	goto_if_set FLAG_KANTO_BADGE02_GET, Route23_EventScript_RecognizeBadge
 	goto Route23_EventScript_MissingBadge
 	end
 
 Route23_EventScript_CheckThunderBadge::
-	goto_if_set FLAG_BADGE03_GET, Route23_EventScript_RecognizeBadge
+	goto_if_set FLAG_KANTO_BADGE03_GET, Route23_EventScript_RecognizeBadge
 	goto Route23_EventScript_MissingBadge
 	end
 
 Route23_EventScript_CheckRainbowBadge::
-	goto_if_set FLAG_BADGE04_GET, Route23_EventScript_RecognizeBadge
+	goto_if_set FLAG_KANTO_BADGE04_GET, Route23_EventScript_RecognizeBadge
 	goto Route23_EventScript_MissingBadge
 	end
 
 Route23_EventScript_CheckSoulBadge::
-	goto_if_set FLAG_BADGE05_GET, Route23_EventScript_RecognizeBadge
+	goto_if_set FLAG_KANTO_BADGE05_GET, Route23_EventScript_RecognizeBadge
 	goto Route23_EventScript_MissingBadge
 	end
 
 Route23_EventScript_CheckMarshBadge::
-	goto_if_set FLAG_BADGE06_GET, Route23_EventScript_RecognizeBadge
+	goto_if_set FLAG_KANTO_BADGE06_GET, Route23_EventScript_RecognizeBadge
 	goto Route23_EventScript_MissingBadge
 	end
 
 Route23_EventScript_CheckVolcanoBadge::
-	goto_if_set FLAG_BADGE07_GET, Route23_EventScript_RecognizeBadge
+	goto_if_set FLAG_KANTO_BADGE07_GET, Route23_EventScript_RecognizeBadge
 	goto Route23_EventScript_MissingBadge
 	end
 
 Route23_EventScript_CheckEarthBadge::
-	goto_if_set FLAG_BADGE08_GET, Route23_EventScript_RecognizeBadge
+	goto_if_set FLAG_KANTO_BADGE08_GET, Route23_EventScript_RecognizeBadge
 	goto Route23_EventScript_MissingBadge
 	end
 
@@ -128,42 +128,42 @@ Route23_EventScript_BadgeGuardTrigger::
 	end
 
 Route23_EventScript_CheckBoulderBadgeTrigger::
-	goto_if_set FLAG_BADGE01_GET, Route23_EventScript_RecognizeBoulderBadgeTrigger
+	goto_if_set FLAG_KANTO_BADGE01_GET, Route23_EventScript_RecognizeBoulderBadgeTrigger
 	goto Route23_EventScript_MissingBoulderBadgeTrigger
 	end
 
 Route23_EventScript_CheckCascadeBadgeTrigger::
-	goto_if_set FLAG_BADGE02_GET, Route23_EventScript_RecognizeBadgeTrigger
+	goto_if_set FLAG_KANTO_BADGE02_GET, Route23_EventScript_RecognizeBadgeTrigger
 	goto Route23_EventScript_MissingBadgeTrigger
 	end
 
 Route23_EventScript_CheckThunderBadgeTrigger::
-	goto_if_set FLAG_BADGE03_GET, Route23_EventScript_RecognizeBadgeTrigger
+	goto_if_set FLAG_KANTO_BADGE03_GET, Route23_EventScript_RecognizeBadgeTrigger
 	goto Route23_EventScript_MissingBadgeTrigger
 	end
 
 Route23_EventScript_CheckRainbowBadgeTrigger::
-	goto_if_set FLAG_BADGE04_GET, Route23_EventScript_RecognizeBadgeTrigger
+	goto_if_set FLAG_KANTO_BADGE04_GET, Route23_EventScript_RecognizeBadgeTrigger
 	goto Route23_EventScript_MissingBadgeTrigger
 	end
 
 Route23_EventScript_CheckSoulBadgeTrigger::
-	goto_if_set FLAG_BADGE05_GET, Route23_EventScript_RecognizeBadgeTrigger
+	goto_if_set FLAG_KANTO_BADGE05_GET, Route23_EventScript_RecognizeBadgeTrigger
 	goto Route23_EventScript_MissingBadgeTrigger
 	end
 
 Route23_EventScript_CheckMarshBadgeTrigger::
-	goto_if_set FLAG_BADGE06_GET, Route23_EventScript_RecognizeBadgeTrigger
+	goto_if_set FLAG_KANTO_BADGE06_GET, Route23_EventScript_RecognizeBadgeTrigger
 	goto Route23_EventScript_MissingBadgeTrigger
 	end
 
 Route23_EventScript_CheckVolcanoBadgeTrigger::
-	goto_if_set FLAG_BADGE07_GET, Route23_EventScript_RecognizeBadgeTrigger
+	goto_if_set FLAG_KANTO_BADGE07_GET, Route23_EventScript_RecognizeBadgeTrigger
 	goto Route23_EventScript_MissingBadgeTrigger
 	end
 
 Route23_EventScript_CheckEarthBadgeTrigger::
-	goto_if_set FLAG_BADGE08_GET, Route23_EventScript_RecognizeBadgeTrigger
+	goto_if_set FLAG_KANTO_BADGE08_GET, Route23_EventScript_RecognizeBadgeTrigger
 	goto Route23_EventScript_MissingBadgeTrigger
 	end
 

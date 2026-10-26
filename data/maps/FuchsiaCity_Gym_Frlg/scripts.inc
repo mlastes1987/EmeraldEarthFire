@@ -13,7 +13,7 @@ FuchsiaCity_Gym_EventScript_DefeatedKoga::
 	famechecker FAMECHECKER_KOGA, 1
 	clearflag FLAG_HIDE_FAME_CHECKER_KOGA_JOURNAL
 	setflag FLAG_DEFEATED_KOGA
-	setflag FLAG_BADGE05_GET
+	setflag FLAG_KANTO_BADGE05_GET
 	set_gym_trainers_frlg 5
 	goto FuchsiaCity_Gym_EventScript_GiveTM06
 	end
@@ -79,7 +79,7 @@ FuchsiaCity_Gym_EventScript_GymGuyPostVictory::
 
 FuchsiaCity_Gym_EventScript_GymStatue::
 	lockall
-	goto_if_set FLAG_BADGE05_GET, FuchsiaCity_Gym_EventScript_GymStatuePostVictory
+	goto_if_set FLAG_KANTO_BADGE05_GET, FuchsiaCity_Gym_EventScript_GymStatuePostVictory
 	msgbox FuchsiaCity_Gym_Text_GymStatue
 	releaseall
 	end

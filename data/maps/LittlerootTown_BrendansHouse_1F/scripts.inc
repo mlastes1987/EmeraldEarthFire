@@ -401,6 +401,28 @@ PlayersHouse_1F_Text_PortsInSlateportLilycove:
 	.string "If I recall, there are ferry ports in\n"
 	.string "SLATEPORT and LILYCOVE.$"
 
+PlayersHouse_1F_Text_SomethingElseInTheEnvelope:
+	.string "DAD: Hold on, there's something\n"
+	.string "else in that envelope.\p"
+	.string "A letter… from a PROF. OAK?\p"
+	.string "From KANTO? You mean the\n"
+	.string "famous POKéMON PROFESSOR?$"
+
+@ The invitation itself. Read out by DAD rather than shown as a separate document, so the
+@ scene keeps its single speaker and the player is told the one thing they need: the KANTO
+@ liner sails from LILYCOVE. VERMILION CITY is named here before the player ever sees it.
+PlayersHouse_1F_Text_OaksLetterNamesVermilion:
+	.string "DAD: “To the CHAMPION of HOENN.\p"
+	.string "“My name is OAK. Word of your\n"
+	.string "“victory has reached KANTO.\p"
+	.string "“The liner from LILYCOVE calls at\n"
+	.string "“VERMILION CITY now.\p"
+	.string "“Come and see me. I have three\n"
+	.string "“POKéMON here waiting for you.”\p"
+	.string "DAD: KANTO… VERMILION CITY…\p"
+	.string "Go on, sail from LILYCOVE,\n"
+	.string "CHAMPION!$"
+
 PlayersHouse_1F_Text_BetterGetBackToGym:
 	.string "I'd better get back to PETALBURG GYM.\p"
 	.string "MOM, thanks for looking after the house\n"

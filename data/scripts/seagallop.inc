@@ -85,6 +85,14 @@ EventScript_ChooseDestFromIslandVermilionAllowed::
 EventScript_SailToDest::
 	specialvar VAR_RESULT, GetSeagallopNumber
 	buffernumberstring STR_VAR_1, VAR_RESULT
+#if !IS_FRLG
+@ The HOENN crossing is its own route, so its departure line names the destination
+@ rather than using the VERMILION or SEVII wording. Only a ROM containing both
+@ regions can reach either of these, so an FRLG build never enters them and keeps the
+@ symbol table it always had.
+	goto_if_eq VAR_0x8006, SEAGALLOP_LILYCOVE_CITY, EventScript_DepartingVermilionToHoenn
+	goto_if_eq VAR_0x8004, SEAGALLOP_LILYCOVE_CITY, EventScript_DepartingFromLilycove
+#endif // !IS_FRLG
 	goto_if_eq VAR_0x8004, SEAGALLOP_VERMILION_CITY, EventScript_DepartingVermilion
 	goto_if_ne VAR_0x8004, SEAGALLOP_VERMILION_CITY, EventScript_DepartingNotVermilion
 	end
@@ -98,6 +106,110 @@ EventScript_DepartingNotVermilion::
 	msgbox Text_AllAboardSeagallopNum
 	goto EventScript_SetSail
 	end
+
+#if !IS_FRLG
+EventScript_DepartingVermilionToHoenn::
+	msgbox Text_AllAboardSeagallopToHoenn
+	goto EventScript_SetSail
+	end
+
+EventScript_DepartingLilycoveToKanto::
+	msgbox Text_AllAboardSeagallopToKanto
+	goto EventScript_SetSail
+	end
+
+@ A LILYCOVE departure is named by where it is going: the KANTO mainland, or one of the
+@ two event islands when the sailor has just been asked which. The islands are the KANTO
+@ harbour family's own piers, reached through the same sSeag rows the VERMILION trips
+@ use, so they add no new destination to anything.
+EventScript_DepartingFromLilycove::
+	goto_if_eq VAR_0x8006, SEAGALLOP_NAVEL_ROCK, EventScript_DepartingLilycoveToNavelRock
+	goto_if_eq VAR_0x8006, SEAGALLOP_BIRTH_ISLAND, EventScript_DepartingLilycoveToBirthIsland
+	goto EventScript_DepartingLilycoveToKanto
+	end
+
+EventScript_DepartingLilycoveToNavelRock::
+	msgbox Text_AllAboardSeagallopToNavelRock
+	goto EventScript_SetSail
+	end
+
+EventScript_DepartingLilycoveToBirthIsland::
+	msgbox Text_AllAboardSeagallopToBirthIsland
+	goto EventScript_SetSail
+	end
+
+@ The HOENN liner, from either end. Both crossings file the same two ids -- the KANTO
+@ end and LILYCOVE -- rather than the pier the player actually boarded at, because
+@ that pair is what the SEAGALLOP tables are keyed on: the direction bit, the
+@ departure wording and the HI-SPEED number all come from it. A SEVII departure for
+@ HOENN therefore sails, and sounds, exactly like the VERMILION one.
+EventScript_SailToHoenn::
+	setvar VAR_0x8004, SEAGALLOP_VERMILION_CITY
+	setvar VAR_0x8006, SEAGALLOP_LILYCOVE_CITY
+	goto EventScript_SailToDest
+	end
+
+EventScript_SailToKanto::
+	setvar VAR_0x8004, SEAGALLOP_LILYCOVE_CITY
+	setvar VAR_0x8006, SEAGALLOP_VERMILION_CITY
+	goto EventScript_SailToDest
+	end
+
+@ What every SEVII harbour sailor reaches after asking where to sail: the island
+@ sailings, or the HOENN liner. It sits in front of the vanilla island menus rather
+@ than inside them, so the pages' geometry and the FRLG build's menus are untouched,
+@ at the cost of one extra button press per island hop.
+EventScript_SeviiSailDest::
+	multichoice 13, 6, MULTI_SAIL_DEST, FALSE
+	switch VAR_RESULT
+	case 0, EventScript_SeviiSailDestIslands
+	case 1, EventScript_SailToHoenn
+	case 2, EventScript_CancelSail
+	case MULTI_B_PRESSED, EventScript_CancelSail
+	end
+
+@ Which island menu a harbour shows depends on the port, and the sailor has already put
+@ its id in VAR_0x8004, so dispatch on that: ONE and TWO ISLAND have menus of their own,
+@ the other five share one.
+EventScript_SeviiSailDestIslands::
+	goto_if_eq VAR_0x8004, SEAGALLOP_ONE_ISLAND, EventScript_ChooseDestFromOneIsland
+	goto_if_eq VAR_0x8004, SEAGALLOP_TWO_ISLAND, EventScript_ChooseDestFromTwoIsland
+	goto EventScript_ChooseDestFromIsland
+	end
+
+@ NAVEL ROCK and BIRTH ISLAND each have a single KANTO sailing -- back to VERMILION --
+@ so their menu names that destination outright rather than leading with the SEVII ISLES
+@ entry the island harbours use to reach their own menus. The HOENN liner sits beside
+@ it, exactly as it does at the island harbours.
+EventScript_NavelBirthSailDest::
+	multichoice 13, 6, MULTI_SAIL_DEST_VERMILION, FALSE
+	switch VAR_RESULT
+	case 0, EventScript_SailToVermilionCity
+	case 1, EventScript_SailToHoenn
+	case 2, EventScript_CancelSail
+	case MULTI_B_PRESSED, EventScript_CancelSail
+	end
+
+Text_AllAboardSeagallopToHoenn:
+	.string "All aboard SEAGALLOP HI-SPEED {STR_VAR_1}!\p"
+	.string "This crossing calls at LILYCOVE\n"
+	.string "CITY in HOENN.$"
+
+Text_AllAboardSeagallopToKanto:
+	.string "All aboard SEAGALLOP HI-SPEED {STR_VAR_1}!\p"
+	.string "This crossing calls at VERMILION\n"
+	.string "CITY in KANTO.$"
+
+Text_AllAboardSeagallopToNavelRock:
+	.string "All aboard SEAGALLOP HI-SPEED {STR_VAR_1}!\p"
+	.string "This crossing calls at NAVEL\n"
+	.string "ROCK in KANTO.$"
+
+Text_AllAboardSeagallopToBirthIsland:
+	.string "All aboard SEAGALLOP HI-SPEED {STR_VAR_1}!\p"
+	.string "This crossing calls at BIRTH\n"
+	.string "ISLAND in KANTO.$"
+#endif // !IS_FRLG
 
 EventScript_SetSail::
 	closemessage

@@ -76,7 +76,11 @@ static const s8 sSeag[][4] = {
     [SEAGALLOP_SEVEN_ISLAND]    = {MAP_GROUP(MAP_SEVEN_ISLAND_HARBOR), MAP_NUM(MAP_SEVEN_ISLAND_HARBOR), 0x08, 0x05},
     [SEAGALLOP_CINNABAR_ISLAND] = {MAP_GROUP(MAP_CINNABAR_ISLAND), MAP_NUM(MAP_CINNABAR_ISLAND),     0x15, 0x07},
     [SEAGALLOP_NAVEL_ROCK]      = {MAP_GROUP(MAP_NAVEL_ROCK_HARBOR_FRLG), MAP_NUM(MAP_NAVEL_ROCK_HARBOR_FRLG),   0x08, 0x05},
-    [SEAGALLOP_BIRTH_ISLAND]    = {MAP_GROUP(MAP_BIRTH_ISLAND_HARBOR_FRLG), MAP_NUM(MAP_BIRTH_ISLAND_HARBOR_FRLG), 0x08, 0x05}
+    [SEAGALLOP_BIRTH_ISLAND]    = {MAP_GROUP(MAP_BIRTH_ISLAND_HARBOR_FRLG), MAP_NUM(MAP_BIRTH_ISLAND_HARBOR_FRLG), 0x08, 0x05},
+    // The HOENN crossing. (8, 11) is the arrival tile every Hoenn ferry uses --
+    // SSTidalCorridor, SouthernIsland_Exterior, FarawayIsland_Entrance and the rest all
+    // warp there -- and it is a plain passable floor tile on LAYOUT_HARBOR.
+    [SEAGALLOP_LILYCOVE_CITY]   = {MAP_GROUP(MAP_LILYCOVE_CITY_HARBOR), MAP_NUM(MAP_LILYCOVE_CITY_HARBOR), 0x08, 0x0b}
 };
 
 // Bitpacked array.  In the commented section, right-most bit is the
@@ -90,7 +94,11 @@ enum TravelDirections
 };
 
 static const u16 sTravelDirectionMatrix[] = {
-    [SEAGALLOP_VERMILION_CITY]  = 0x6fe, // 11011111110
+    // Bit SEAGALLOP_LILYCOVE_CITY is set here and clear in LILYCOVE's own row below, so
+    // the HOENN crossing sails east on the way out and west on the way back. Without
+    // that pair both legs would look identical, since GetDirectionOfTravel() reads a
+    // bit that does not exist in the old 11-bit rows and gets 0.
+    [SEAGALLOP_VERMILION_CITY]  = 0xefe, // 111011111110
     [SEAGALLOP_ONE_ISLAND]      = 0x6fc, // 11011111100
     [SEAGALLOP_TWO_ISLAND]      = 0x6f8, // 11011111000
     [SEAGALLOP_THREE_ISLAND]    = 0x6f0, // 11011110000
@@ -100,7 +108,8 @@ static const u16 sTravelDirectionMatrix[] = {
     [SEAGALLOP_SEVEN_ISLAND]    = 0x440, // 10001000000
     [SEAGALLOP_CINNABAR_ISLAND] = 0x7ff, // 11111111111
     [SEAGALLOP_NAVEL_ROCK]      = 0x6e0, // 11011100000
-    [SEAGALLOP_BIRTH_ISLAND]    = 0x000  // 00000000000
+    [SEAGALLOP_BIRTH_ISLAND]    = 0x000, // 00000000000
+    [SEAGALLOP_LILYCOVE_CITY]   = 0x000  // 00000000000
 };
 
 static const union AnimCmd sSpriteAnims_Ferry_WB[] = {
@@ -463,6 +472,12 @@ u8 GetSeagallopNumber(void)
 
     if (originId == SEAGALLOP_CINNABAR_ISLAND || destId == SEAGALLOP_CINNABAR_ISLAND)
         return 1;
+
+    // The HOENN run has a boat of its own, rather than inheriting the KANTO number of
+    // whichever end of the crossing happens to be VERMILION. Checked first for that
+    // reason.
+    if (originId == SEAGALLOP_LILYCOVE_CITY || destId == SEAGALLOP_LILYCOVE_CITY)
+        return 8;
 
     if (originId == SEAGALLOP_VERMILION_CITY || destId == SEAGALLOP_VERMILION_CITY)
         return 7;

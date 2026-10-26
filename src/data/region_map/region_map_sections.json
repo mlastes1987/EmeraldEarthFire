@@ -1552,10 +1552,6 @@
       "height": 1
     },
     {
-      "id": "MAPSEC_BIRTH_ISLAND",
-      "name": "BIRTH ISLAND"
-    },
-    {
       "id": "MAPSEC_FARAWAY_ISLAND",
       "name": "FARAWAY ISLAND"
     },
@@ -1618,10 +1614,6 @@
       "y": 8,
       "width": 1,
       "height": 1
-    },
-    {
-      "id": "MAPSEC_NAVEL_ROCK",
-      "name": "NAVEL ROCK"
     },
     {
       "id": "MAPSEC_TRAINER_HILL",

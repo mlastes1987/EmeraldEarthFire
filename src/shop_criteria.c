@@ -2,6 +2,7 @@
 #include "item.h"
 #include "script.h"
 #include "event_data.h"
+#include "regions.h"
 #include "malloc.h"
 #include "shop_criteria.h"
 
@@ -48,15 +49,8 @@ void TryFreeDynamicShopItemList(const u16 **ogItemList)
 
 static UNUSED bool32 ShopCriteriaByBadgeCount(u32 count)
 {
-    u32 badgeCount = 0;
-
-    for (u32 badgeFlag = FLAG_BADGE01_GET; badgeFlag < FLAG_BADGE01_GET + NUM_BADGES; badgeFlag++)
-    {
-        if (FlagGet(badgeFlag))
-            badgeCount++;
-    }
-
-    if (badgeCount >= count)
+    // A shop in Kanto is gated on Kanto's badges, a Hoenn shop on Hoenn's.
+    if (CountBadges(GetCurrentRegion()) >= count)
         return TRUE;
 
     return FALSE;

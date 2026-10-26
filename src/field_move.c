@@ -8,6 +8,7 @@
 #include "constants/field_move.h"
 #include "constants/moves.h"
 #include "constants/party_menu.h"
+#include "regions.h"
 
 static bool32 IsAlwaysFalse(enum FieldMove fieldMove)
 {
@@ -21,7 +22,12 @@ static bool32 IsAlwaysTrue(enum FieldMove fieldMove)
 
 static bool32 HasBadgeForFieldMove(enum FieldMove fieldMove)
 {
-    return FlagGet(gFieldMoveInfo[fieldMove].arg + FLAG_BADGE01_GET);
+    // A player standing in Kanto has to earn Kanto's badges, not Hoenn's.
+    enum Region region = GetCurrentRegion();
+    u32 badge = (region == REGION_KANTO) ? gFieldMoveInfo[fieldMove].kantoBadge
+                                         : gFieldMoveInfo[fieldMove].arg;
+
+    return HasBadge(region, badge);
 }
 
 const struct FieldMoveUnlock gFieldMoveUnlocks[FIELD_MOVE_UNLOCK_COUNT] =
@@ -43,7 +49,10 @@ const struct FieldMoveUnlock gFieldMoveUnlocks[FIELD_MOVE_UNLOCK_COUNT] =
     },
 };
 
-#define FLAG_TO_BADGE(flag) flag - FLAG_BADGE01_GET
+// The two regions hand out their badges in a different order, so each field move names the
+// badge it needs in each set. Both expand to a 0-based index within that region's badges.
+#define HOENN_BADGE(flag) ((flag) - FLAG_BADGE01_GET)
+#define KANTO_BADGE(flag) ((flag) - FLAG_KANTO_BADGE01_GET)
 
 const struct FieldMoveInfo gFieldMoveInfo[FIELD_MOVES_COUNT] =
 {
@@ -53,7 +62,8 @@ const struct FieldMoveInfo gFieldMoveInfo[FIELD_MOVES_COUNT] =
         .unlockType = BADGE_UNLOCK,
         .moveID = MOVE_CUT,
         .partyMsgID = PARTY_MSG_NOTHING_TO_CUT,
-        .arg = IS_FRLG ? FLAG_TO_BADGE(FLAG_BADGE02_GET) : FLAG_TO_BADGE(FLAG_BADGE01_GET),
+        .arg = HOENN_BADGE(FLAG_BADGE01_GET),        // Stone Badge
+        .kantoBadge = KANTO_BADGE(FLAG_KANTO_BADGE02_GET), // Cascade Badge
     },
 
     [FIELD_MOVE_FLASH] =
@@ -62,7 +72,8 @@ const struct FieldMoveInfo gFieldMoveInfo[FIELD_MOVES_COUNT] =
         .unlockType = BADGE_UNLOCK,
         .moveID = MOVE_FLASH,
         .partyMsgID = PARTY_MSG_CANT_USE_HERE,
-        .arg = IS_FRLG ? FLAG_TO_BADGE(FLAG_BADGE01_GET) : FLAG_TO_BADGE(FLAG_BADGE02_GET),
+        .arg = HOENN_BADGE(FLAG_BADGE02_GET),        // Knuckle Badge
+        .kantoBadge = KANTO_BADGE(FLAG_KANTO_BADGE01_GET), // Boulder Badge
     },
 
     [FIELD_MOVE_ROCK_SMASH] =
@@ -71,7 +82,8 @@ const struct FieldMoveInfo gFieldMoveInfo[FIELD_MOVES_COUNT] =
         .unlockType = BADGE_UNLOCK,
         .moveID = MOVE_ROCK_SMASH,
         .partyMsgID = PARTY_MSG_CANT_USE_HERE,
-        .arg = IS_FRLG ? FLAG_TO_BADGE(FLAG_BADGE06_GET) : FLAG_TO_BADGE(FLAG_BADGE03_GET),
+        .arg = HOENN_BADGE(FLAG_BADGE03_GET),        // Dynamo Badge
+        .kantoBadge = KANTO_BADGE(FLAG_KANTO_BADGE06_GET), // Marsh Badge
     },
 
     [FIELD_MOVE_STRENGTH] =
@@ -80,7 +92,8 @@ const struct FieldMoveInfo gFieldMoveInfo[FIELD_MOVES_COUNT] =
         .unlockType = BADGE_UNLOCK,
         .moveID = MOVE_STRENGTH,
         .partyMsgID = PARTY_MSG_CANT_USE_HERE,
-        .arg = FLAG_TO_BADGE(FLAG_BADGE04_GET),
+        .arg = HOENN_BADGE(FLAG_BADGE04_GET),        // Heat Badge
+        .kantoBadge = KANTO_BADGE(FLAG_KANTO_BADGE04_GET), // Rainbow Badge
     },
 
     [FIELD_MOVE_SURF] =
@@ -89,7 +102,8 @@ const struct FieldMoveInfo gFieldMoveInfo[FIELD_MOVES_COUNT] =
         .unlockType = BADGE_UNLOCK,
         .moveID = MOVE_SURF,
         .partyMsgID = PARTY_MSG_CANT_SURF_HERE,
-        .arg = FLAG_TO_BADGE(FLAG_BADGE05_GET),
+        .arg = HOENN_BADGE(FLAG_BADGE05_GET),        // Balance Badge
+        .kantoBadge = KANTO_BADGE(FLAG_KANTO_BADGE05_GET), // Soul Badge
     },
 
     [FIELD_MOVE_FLY] =
@@ -98,7 +112,8 @@ const struct FieldMoveInfo gFieldMoveInfo[FIELD_MOVES_COUNT] =
         .unlockType = BADGE_UNLOCK,
         .moveID = MOVE_FLY,
         .partyMsgID = PARTY_MSG_CANT_USE_HERE,
-        .arg = IS_FRLG ? FLAG_TO_BADGE(FLAG_BADGE03_GET) : FLAG_TO_BADGE(FLAG_BADGE06_GET),
+        .arg = HOENN_BADGE(FLAG_BADGE06_GET),        // Feather Badge
+        .kantoBadge = KANTO_BADGE(FLAG_KANTO_BADGE03_GET), // Thunder Badge
     },
 
     [FIELD_MOVE_DIVE] =
@@ -107,7 +122,8 @@ const struct FieldMoveInfo gFieldMoveInfo[FIELD_MOVES_COUNT] =
         .unlockType = BADGE_UNLOCK,
         .moveID = MOVE_DIVE,
         .partyMsgID = PARTY_MSG_CANT_USE_HERE,
-        .arg = FLAG_TO_BADGE(FLAG_BADGE07_GET),
+        .arg = HOENN_BADGE(FLAG_BADGE07_GET),        // Mind Badge
+        .kantoBadge = KANTO_BADGE(FLAG_KANTO_BADGE07_GET), // Volcano Badge
     },
 
     [FIELD_MOVE_WATERFALL] =
@@ -116,7 +132,8 @@ const struct FieldMoveInfo gFieldMoveInfo[FIELD_MOVES_COUNT] =
         .unlockType = BADGE_UNLOCK,
         .moveID = MOVE_WATERFALL,
         .partyMsgID = PARTY_MSG_CANT_USE_HERE,
-        .arg = IS_FRLG ? FLAG_TO_BADGE(FLAG_BADGE07_GET) : FLAG_TO_BADGE(FLAG_BADGE08_GET),
+        .arg = HOENN_BADGE(FLAG_BADGE08_GET),        // Rain Badge
+        .kantoBadge = KANTO_BADGE(FLAG_KANTO_BADGE07_GET), // Volcano Badge
     },
 
     [FIELD_MOVE_TELEPORT] =

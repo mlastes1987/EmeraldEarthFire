@@ -905,6 +905,60 @@ static const struct MenuAction sMultichoiceList_SeagallopVermilion[] = {
     {gText_Exit}
 };
 
+// The cross-region crossing menu, offered at both ends of the route: Vermilion's ferry
+// sailor and every SEVII harbour sailor show it. The SEVII ISLES entry continues with
+// the vanilla island sailings; LILYCOVE CITY is the HOENN liner. See
+// data/scripts/seagallop.inc and data/maps/VermilionCity_Frlg/scripts.inc.
+static const struct MenuAction sMultichoiceList_SailDest[] = {
+    {gText_SeviiIslands},
+    {gText_LilycoveCity},
+    {gText_Exit}
+};
+
+// NAVEL ROCK and BIRTH ISLAND had exactly one destination between them -- VERMILION --
+// so their menu names it outright and puts the HOENN liner beside it, rather than
+// leading with the SEVII ISLANDS entry that the seven island harbours use to reach
+// their own destination menus.
+static const struct MenuAction sMultichoiceList_SailDestVermilion[] = {
+    {gText_Vermilion},
+    {gText_LilycoveCity},
+    {gText_Exit}
+};
+
+// The HOENN end of the same crossing, at LILYCOVE. VERMILION leads because it is the
+// KANTO mainland every sailing calls at, and the event islands follow only while the
+// player holds their ticket -- the shape VERMILION's own harbour uses, with the mainland
+// standing in for that harbour's SEVII ISLES entry. Built as three lists for the same
+// reason: a destination you cannot sail to is never offered.
+static const struct MenuAction sMultichoiceList_SailDestNavel[] = {
+    {gText_Vermilion},
+    {gText_NavelRock},
+    {gText_Exit}
+};
+
+static const struct MenuAction sMultichoiceList_SailDestBirth[] = {
+    {gText_Vermilion},
+    {gText_BirthIsland},
+    {gText_Exit}
+};
+
+static const struct MenuAction sMultichoiceList_SailDestNavelBirth[] = {
+    {gText_Vermilion},
+    {gText_NavelRock},
+    {gText_BirthIsland},
+    {gText_Exit}
+};
+
+// OAK's three KANTO starters, offered on the VERMILION pier. The FRLG lab scene offers
+// the same three by putting a ball on the floor for each of them; out in the open this
+// has to be a menu instead, and the script branches on VAR_RESULT to the branch that can
+// name the species it hands over. See VermilionCity_EventScript_ProfOak.
+static const struct MenuAction sMultichoiceList_KantoStarter[] = {
+    {COMPOUND_STRING("BULBASAUR")},
+    {COMPOUND_STRING("CHARMANDER")},
+    {COMPOUND_STRING("SQUIRTLE")},
+};
+
 const u8 sText_NoThanks[] = _("NO THANKS");
 
 static const struct MenuAction sMultichoiceList_GameCornerPokemonPrizes[] = {
@@ -1294,6 +1348,12 @@ static const struct MultichoiceListStruct sMultichoiceLists[] =
     [MULTI_HOF_VICTORIES_QUIT]                         = MULTICHOICE(sMultichoiceList_HOF_Victories_Quit),
     [MULTI_EGGS_VICTORIES_QUIT]                        = MULTICHOICE(sMultichoiceList_Eggs_Victories_Quit),
     [MULTI_HOF_EGGS_VICTORIES_QUIT]                    = MULTICHOICE(sMultichoiceList_HOF_Eggs_Victories_Quit),
+    [MULTI_SAIL_DEST]                                  = MULTICHOICE(sMultichoiceList_SailDest),
+    [MULTI_SAIL_DEST_VERMILION]                        = MULTICHOICE(sMultichoiceList_SailDestVermilion),
+    [MULTI_SAIL_DEST_NAVEL]                            = MULTICHOICE(sMultichoiceList_SailDestNavel),
+    [MULTI_SAIL_DEST_BIRTH]                            = MULTICHOICE(sMultichoiceList_SailDestBirth),
+    [MULTI_SAIL_DEST_NAVEL_BIRTH]                      = MULTICHOICE(sMultichoiceList_SailDestNavelBirth),
+    [MULTI_VERMILION_KANTO_STARTER]                    = MULTICHOICE(sMultichoiceList_KantoStarter),
 };
 
 const u8 *const gStdStrings[] =

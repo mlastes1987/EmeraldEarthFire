@@ -405,6 +405,40 @@ string file_parent(string filename){
     return filename.substr(0, dir_pos + 1);
 }
 
+// Every immediate subdirectory of dir that has a map.json, sorted so the result does not
+// depend on the filesystem's iteration order.
+vector<string> map_jsons_in_dir(const string &dir) {
+    vector<string> map_jsons;
+
+    for (const std::filesystem::directory_entry &entry : std::filesystem::directory_iterator(dir)) {
+        if (!entry.is_directory())
+            continue;
+
+        std::filesystem::path map_json = entry.path() / "map.json";
+        if (std::filesystem::is_regular_file(map_json))
+            map_jsons.push_back(map_json.string());
+    }
+
+    if (map_jsons.empty())
+        FATAL_ERROR("Found no map.json in any subdirectory of %s\n", dir.c_str());
+
+    sort(map_jsons.begin(), map_jsons.end());
+
+    return map_jsons;
+}
+
+// A map argument is one map.json, or a directory holding the map subdirectories. Handing
+// over the directory is how the build keeps 900+ paths off the command line, which Windows
+// limits to 32,767 characters.
+void append_map_json_args(vector<string> &map_filepaths, const char *arg) {
+    if (std::filesystem::is_directory(arg)) {
+        vector<string> map_jsons = map_jsons_in_dir(arg);
+        map_filepaths.insert(map_filepaths.end(), map_jsons.begin(), map_jsons.end());
+    } else {
+        map_filepaths.push_back(string(arg));
+    }
+}
+
 void process_map(string map_filepath, string layouts_filepath, string output_dir) {
     string mapdata_err, layouts_err;
 
@@ -750,7 +784,10 @@ void process_groups(string groups_filepath, vector<string> &map_filepaths, strin
         }
         string map_name = json_to_string(map_data, "name");
 
-        if ((version == "emerald" && region != "REGION_HOENN")
+        // An emerald build accepts maps from any region so that Hoenn and Kanto can
+        // coexist in a single ROM and the player can travel between them. A firered
+        // build still excludes Hoenn maps.
+        if ((version == "emerald" && region != "REGION_HOENN" && region != "REGION_KANTO")
          || (version == "firered" && region != "REGION_KANTO")) {
             invalid_maps.push_back(map_name);
         }
@@ -790,7 +827,10 @@ string generate_layout_headers_text(Json layouts_data) {
             else if (version == "firered")
                 layout_version = "frlg";
         }
-        if ((version == "emerald" && layout_version != "emerald")
+        // An emerald build also emits FRLG layouts. Their layout_version is kept as
+        // "frlg" so the isFrlg byte below stays TRUE, which is required for the
+        // 640-metatile primary tilesets and FRLG metatile attribute format.
+        if ((version == "emerald" && layout_version != "emerald" && layout_version != "frlg")
          || (version == "firered" && layout_version != "frlg"))
             continue;
         string layoutName = json_to_string(layout, "name");
@@ -848,7 +888,8 @@ string generate_layouts_table_text(Json layouts_data) {
             else if (version == "firered")
                 layout_version = "frlg";
         }
-        if ((version == "emerald" && layout_version != "emerald") || (version == "firered" && layout_version != "frlg")) {
+        if ((version == "emerald" && layout_version != "emerald" && layout_version != "frlg")
+         || (version == "firered" && layout_version != "frlg")) {
             text << "\t.4byte NULL\n";
         } else {
             string layout_name = json_to_string(layout, "name", true);
@@ -960,7 +1001,7 @@ int main(int argc, char *argv[]) {
     }
     else if (mode == "groups") {
         if (argc < 6)
-            FATAL_ERROR("USAGE: mapjson groups <game-version> <groups_file> <map_file> [additional_map_files] <output_asm_dir> <output_c_dir>\n");
+            FATAL_ERROR("USAGE: mapjson groups <game-version> <groups_file> <map_file_or_dir> [additional_map_files_or_dirs] <output_asm_dir> <output_c_dir>\n");
 
         infer_separator(argv[3]);
         string filepath(argv[3]);
@@ -969,7 +1010,7 @@ int main(int argc, char *argv[]) {
         const int firstMapFileArg = 4;
         const int lastMapFileArg = argc - 3;
         for (int i = firstMapFileArg; i <= lastMapFileArg; i++) {
-            map_filepaths.push_back(argv[i]);
+            append_map_json_args(map_filepaths, argv[i]);
         }
 
         string output_asm(argv[argc - 2]);
@@ -990,7 +1031,7 @@ int main(int argc, char *argv[]) {
     }
     else if (mode == "event_constants") {
         if (argc < 5)
-            FATAL_ERROR("USAGE: mapjson event_constants <game-version> <map_file> [additional_map_files] <output_ids_file>");
+            FATAL_ERROR("USAGE: mapjson event_constants <game-version> <map_file_or_dir> [additional_map_files_or_dirs] <output_ids_file>");
 
         infer_separator(argv[3]);
 
@@ -998,7 +1039,7 @@ int main(int argc, char *argv[]) {
         const int firstMapFileArg = 3;
         const int lastMapFileArg = argc - 2;
         for (int i = firstMapFileArg; i <= lastMapFileArg; i++) {
-            filepaths.push_back(argv[i]);
+            append_map_json_args(filepaths, argv[i]);
         }
         string output_ids_file(argv[argc - 1]);
 

@@ -18,6 +18,13 @@
 #include "strings.h"
 #include "string_util.h"
 #include "trainer_card.h"
+
+// A badge sheet is 0x80 bytes per badge and each badge is 2x2 tiles, so the sheet is
+// BADGE_SHEET_BYTES at 4bpp (32 bytes to a tile) and the tile row starts at BG3's baseTile
+// of 192 (see sTrainerCardBgTemplates). Kanto's badges are a second sheet after Hoenn's.
+#define BADGE_SHEET_BYTES (0x80 * NUM_BADGES)
+#define BADGE_SHEET_TILES (BADGE_SHEET_BYTES / 32)
+#define BADGE_TILE_BASE   192
 #include "gpu_regs.h"
 #include "international_string_util.h"
 #include "pokedex.h"
@@ -59,7 +66,7 @@ struct TrainerCardData
     bool8 unused_E;
     bool8 unused_F;
     bool8 hasTrades;
-    u8 badgeCount[NUM_BADGES];
+    u8 badgeCount[NUM_BADGES + NUM_KANTO_BADGES];
     u8 easyChatProfile[TRAINER_CARD_PROFILE_LENGTH][13];
     u8 textPlayersCard[70];
     u8 textHofTime[70];
@@ -83,7 +90,7 @@ struct TrainerCardData
     u16 frontTilemap[600];
     u16 backTilemap[600];
     u16 bgTilemap[600];
-    u8 badgeTiles[0x80 * NUM_BADGES];
+    u8 badgeTiles[0x80 * (NUM_BADGES + NUM_KANTO_BADGES)];
     u8 stickerTiles[0x200];
     u8 cardTiles[0x2300];
     u16 cardTilemapBuffer[0x1000];
@@ -563,9 +570,17 @@ static bool8 LoadCardGfx(void)
         break;
     case 3:
         if (sData->cardType != CARD_TYPE_FRLG)
+        {
             DecompressDataWithHeaderWram(sHoennTrainerCardBadges_Gfx, sData->badgeTiles);
+#if !IS_FRLG
+            // A second sheet for Kanto's badges, drawn as a second row below Hoenn's.
+            DecompressDataWithHeaderWram(sKantoTrainerCardBadges_Gfx, sData->badgeTiles + BADGE_SHEET_BYTES);
+#endif
+        }
         else
+        {
             DecompressDataWithHeaderWram(sKantoTrainerCardBadges_Gfx, sData->badgeTiles);
+        }
         break;
     case 4:
         if (sData->cardType != CARD_TYPE_FRLG)
@@ -827,7 +842,6 @@ void CopyTrainerCardData(struct TrainerCard *dst, struct TrainerCard *src, u8 ga
 static void SetDataFromTrainerCard(void)
 {
     u8 i;
-    u32 badgeFlag;
 
     sData->hasPokedex = FALSE;
     sData->hasHofResult = FALSE;
@@ -852,11 +866,12 @@ static void SetDataFromTrainerCard(void)
     if (sData->trainerCard.battleTowerWins || sData->trainerCard.battleTowerStraightWins)
         sData->hasBattleTowerWins++;
 
-    for (i = 0, badgeFlag = FLAG_BADGE01_GET; badgeFlag < FLAG_BADGE01_GET + NUM_BADGES; badgeFlag++, i++)
-    {
-        if (FlagGet(badgeFlag))
-            sData->badgeCount[i]++;
-    }
+    for (i = 0; i < NUM_BADGES; i++)
+        sData->badgeCount[i] = HasBadge(REGION_HOENN, i);
+#if !IS_FRLG
+    for (i = 0; i < NUM_KANTO_BADGES; i++)
+        sData->badgeCount[NUM_BADGES + i] = HasBadge(REGION_KANTO, i);
+#endif
 }
 
 static void InitGpuRegs(void)
@@ -1436,7 +1451,10 @@ static u8 SetCardBgsAndPals(void)
     switch (sData->bgPalLoadState)
     {
     case 0:
-        LoadBgTiles(3, sData->badgeTiles, ARRAY_COUNT(sData->badgeTiles), 0);
+        LoadBgTiles(3, sData->badgeTiles, BADGE_SHEET_BYTES, 0);
+#if !IS_FRLG
+        LoadBgTiles(3, sData->badgeTiles + BADGE_SHEET_BYTES, BADGE_SHEET_BYTES, BADGE_SHEET_TILES);
+#endif
         break;
     case 1:
         LoadBgTiles(0, sData->cardTiles, 0x1800, 0);
@@ -1509,29 +1527,40 @@ static void DrawCardFrontOrBack(u16 *ptr)
     CopyBgTilemapBufferToVram(0);
 }
 
+// Draws one row of up to NUM_BADGES earned badges: each badge is 2x2 tiles and they are
+// spaced three tiles apart, so the sheet advances two tiles per badge and one tile row down.
+static void DrawBadgeRow(const u8 *badgeCount, u16 firstTile, s16 y)
+{
+    s16 i, x = 4;
+
+    for (i = 0; i < NUM_BADGES; i++, firstTile += 2, x += 3)
+    {
+        if (badgeCount[i])
+        {
+            FillBgTilemapBufferRect(3, firstTile, x, y, 1, 1, 3);
+            FillBgTilemapBufferRect(3, firstTile + 1, x + 1, y, 1, 1, 3);
+            FillBgTilemapBufferRect(3, firstTile + 16, x, y + 1, 1, 1, 3);
+            FillBgTilemapBufferRect(3, firstTile + 17, x + 1, y + 1, 1, 1, 3);
+        }
+    }
+}
+
 static void DrawStarsAndBadgesOnCard(void)
 {
     static const u8 yOffsets[] = {7, 7};
 
-    s16 i, x, y;
-    u16 tileNum = 192;
-    u8 palNum = 3;
+    s16 y;
 
     FillBgTilemapBufferRect(3, 143, 15, yOffsets[sData->isHoenn], sData->trainerCard.stars, 1, 4);
     if (!sData->isLink)
     {
-        x = 4;
         y = IS_FRLG ? 16 : 15;
-        for (i = 0; i < NUM_BADGES; i++, tileNum += 2, x += 3)
-        {
-            if (sData->badgeCount[i])
-            {
-                FillBgTilemapBufferRect(3, tileNum, x, y, 1, 1, palNum);
-                FillBgTilemapBufferRect(3, tileNum + 1, x + 1, y, 1, 1, palNum);
-                FillBgTilemapBufferRect(3, tileNum + 16, x, y + 1, 1, 1, palNum);
-                FillBgTilemapBufferRect(3, tileNum + 17, x + 1, y + 1, 1, 1, palNum);
-            }
-        }
+        DrawBadgeRow(sData->badgeCount, BADGE_TILE_BASE, y);
+#if !IS_FRLG
+        // Kanto's badges go on a second row, from the second sheet.
+        if (sData->cardType != CARD_TYPE_FRLG)
+            DrawBadgeRow(&sData->badgeCount[NUM_BADGES], BADGE_TILE_BASE + BADGE_SHEET_TILES, y + 2);
+#endif
     }
     CopyBgTilemapBufferToVram(3);
 }

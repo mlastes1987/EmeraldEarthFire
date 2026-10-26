@@ -1187,9 +1187,14 @@
 #define FLAG_HIDDEN_ITEM_VIRIDIAN_CITY_GYM_MACHO_BRACE                     (FLAG_HIDDEN_ITEMS_START + 189)
 #define FLAG_HIDDEN_ITEM_SSANNE_EXTERIOR_LAVA_COOKIE                       (FLAG_HIDDEN_ITEMS_START + 190)
 
+// The Hoenn -> Kanto journey (section 8 of KANTO_IN_EMERALD.md). A FireRed build keeps its OAK in
+// PALLET TOWN and has no VERMILION pier scene, so only the hide flag is referenced from the
+// FireRed half of the map scripts; the received flag is defined here for the shared name tables
+// and so a Kanto script never has to care which ROM it is compiled into.
+#define FLAG_HIDE_VERMILION_PROF_OAK    0x4A7 // was FLAG_UNUSED_0x4A7
+#define FLAG_RECEIVED_KANTO_STARTER     0x4A8 // was FLAG_UNUSED_0x4A8
+
 // Unused hidden item flags
-#define FLAG_UNUSED_0x4A7               0x4A7 // Unused Flag
-#define FLAG_UNUSED_0x4A8               0x4A8 // Unused Flag
 #define FLAG_UNUSED_0x4A9               0x4A9 // Unused Flag
 #define FLAG_UNUSED_0x4AA               0x4AA // Unused Flag
 #define FLAG_UNUSED_0x4AB               0x4AB // Unused Flag
@@ -1335,6 +1340,19 @@
 #define FLAG_BADGE07_GET                                            (SYS_FLAGS + 0x26)
 #define FLAG_BADGE08_GET                                            (SYS_FLAGS + 0x27)
 #define NUM_BADGES                                                  (1 + FLAG_BADGE08_GET - FLAG_BADGE01_GET)
+
+// This build's badge set *is* Kanto's, so the shared Kanto map scripts use the same
+// flags as everything else. An Emerald build instead gives Kanto its own badge flags
+// (see constants/flags.h) so the two regions cannot share one badge.
+#define FLAG_KANTO_BADGE01_GET                                      FLAG_BADGE01_GET
+#define FLAG_KANTO_BADGE02_GET                                      FLAG_BADGE02_GET
+#define FLAG_KANTO_BADGE03_GET                                      FLAG_BADGE03_GET
+#define FLAG_KANTO_BADGE04_GET                                      FLAG_BADGE04_GET
+#define FLAG_KANTO_BADGE05_GET                                      FLAG_BADGE05_GET
+#define FLAG_KANTO_BADGE06_GET                                      FLAG_BADGE06_GET
+#define FLAG_KANTO_BADGE07_GET                                      FLAG_BADGE07_GET
+#define FLAG_KANTO_BADGE08_GET                                      FLAG_BADGE08_GET
+#define NUM_KANTO_BADGES                                            NUM_BADGES
 
 #define FLAG_SYS_POKEMON_GET                                        (SYS_FLAGS + 0x28)
 #define FLAG_SYS_POKEDEX_GET                                        (SYS_FLAGS + 0x29)

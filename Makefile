@@ -420,6 +420,34 @@ generated: $(AUTO_GEN_TARGETS)
 	@: # Silence the "Nothing to be done for `generated'" message, which some people were confusing for an error.
 
 
+# Sanity check of the map tree, run before anything is linked.
+# A map dir that no group in data/maps/map_groups.json lists is *silently* dropped from the
+# ROM by mapjson, and a group entry, layout or event_scripts.s include with no map behind it
+# fails late and obscurely. Both are what deleting a map leaves behind, so the check is meant
+# to stop a ROM from being produced at all. See migration_scripts/audit_map_tree_consistency.py
+# (`--names` there runs a wider sweep that is deliberately not a gate).
+MAP_TREE_AUDIT := migration_scripts/audit_map_tree_consistency.py
+MAP_TREE_STAMP := $(OBJ_DIR)/map_tree_check.stamp
+# Exactly the generated headers the check reads, so an unrelated generator cannot block it.
+MAP_TREE_HEADERS := $(INCLUDECONSTS_OUTDIR)/map_groups.h $(INCLUDECONSTS_OUTDIR)/layouts.h \
+                    $(INCLUDECONSTS_OUTDIR)/map_event_ids.h $(INCLUDECONSTS_OUTDIR)/region_map_sections.h
+
+.PHONY: map-tree-check
+map-tree-check: $(MAP_TREE_STAMP)
+
+# The map, layout and include-list *directories and files* are prerequisites as well as the
+# map JSONs: a map dir that has just been removed is precisely what a list of existing files
+# cannot see, and rmdir does move the parent's timestamp. event_scripts.s is here because it
+# names the script files.
+$(MAP_TREE_STAMP): $(MAPS_DIR) $(LAYOUTS_DIR) $(MAP_JSONS) \
+                   $(MAPS_DIR)/map_groups.json $(LAYOUTS_DIR)/layouts.json \
+                   $(DATA_ASM_SUBDIR)/event_scripts.s \
+                   $(MAP_TREE_HEADERS) $(MAP_TREE_AUDIT)
+	@mkdir -p $(OBJ_DIR)
+	python3 $(MAP_TREE_AUDIT) --strict
+	@touch $@
+
+
 %.s:   ;
 %.png: ;
 %.pal: ;
@@ -583,6 +611,10 @@ $(ELF): $(LD_SCRIPT) $(OBJS) libagbsyscall
 	@echo "cd $(OBJ_DIR) && $(LD) $(LDFLAGS) -T ../../$< -o ../../$@ <objs> <libs> | cat"
 	$(FIX) $@ -t"$(TITLE)" -c$(GAME_CODE) -m$(MAKER_CODE) -r$(REVISION) --silent
 endif
+
+# Order-only on purpose: the map tree is checked before anything is linked, but a passing
+# check must not make the ELF look out of date, or every `make` would relink the ROM.
+$(ELF): | map-tree-check
 
 # Builds the rom from the elf file
 $(ROM): $(ELF)

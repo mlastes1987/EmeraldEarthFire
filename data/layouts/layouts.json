@@ -4435,28 +4435,6 @@
       "layout_version": "emerald"
     },
     {
-      "id": "LAYOUT_BIRTH_ISLAND_EXTERIOR",
-      "name": "BirthIsland_Exterior_Layout",
-      "width": 30,
-      "height": 30,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_Dewford",
-      "border_filepath": "data/layouts/BirthIsland_Exterior/border.bin",
-      "blockdata_filepath": "data/layouts/BirthIsland_Exterior/map.bin",
-      "layout_version": "emerald"
-    },
-    {
-      "id": "LAYOUT_ISLAND_HARBOR",
-      "name": "IslandHarbor_Layout",
-      "width": 17,
-      "height": 13,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_IslandHarbor",
-      "border_filepath": "data/layouts/IslandHarbor/border.bin",
-      "blockdata_filepath": "data/layouts/IslandHarbor/map.bin",
-      "layout_version": "emerald"
-    },
-    {
       "id": "LAYOUT_UNDERWATER_MARINE_CAVE",
       "name": "Underwater_MarineCave_Layout",
       "width": 20,
@@ -4619,94 +4597,6 @@
       "secondary_tileset": "gTileset_Cave",
       "border_filepath": "data/layouts/AlteringCave/border.bin",
       "blockdata_filepath": "data/layouts/AlteringCave/map.bin",
-      "layout_version": "emerald"
-    },
-    {
-      "id": "LAYOUT_NAVEL_ROCK_EXTERIOR",
-      "name": "NavelRock_Exterior_Layout",
-      "width": 21,
-      "height": 24,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_Dewford",
-      "border_filepath": "data/layouts/NavelRock_Exterior/border.bin",
-      "blockdata_filepath": "data/layouts/NavelRock_Exterior/map.bin",
-      "layout_version": "emerald"
-    },
-    {
-      "id": "LAYOUT_NAVEL_ROCK_ENTRANCE",
-      "name": "NavelRock_Entrance_Layout",
-      "width": 21,
-      "height": 32,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_NavelRock",
-      "border_filepath": "data/layouts/NavelRock_Entrance/border.bin",
-      "blockdata_filepath": "data/layouts/NavelRock_Entrance/map.bin",
-      "layout_version": "emerald"
-    },
-    {
-      "id": "LAYOUT_NAVEL_ROCK_TOP",
-      "name": "NavelRock_Top_Layout",
-      "width": 25,
-      "height": 28,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_NavelRock",
-      "border_filepath": "data/layouts/NavelRock_Top/border.bin",
-      "blockdata_filepath": "data/layouts/NavelRock_Top/map.bin",
-      "layout_version": "emerald"
-    },
-    {
-      "id": "LAYOUT_NAVEL_ROCK_BOTTOM",
-      "name": "NavelRock_Bottom_Layout",
-      "width": 22,
-      "height": 22,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_NavelRock",
-      "border_filepath": "data/layouts/NavelRock_Bottom/border.bin",
-      "blockdata_filepath": "data/layouts/NavelRock_Bottom/map.bin",
-      "layout_version": "emerald"
-    },
-    {
-      "id": "LAYOUT_NAVEL_ROCK_LADDER_ROOM1",
-      "name": "NavelRock_LadderRoom1_Layout",
-      "width": 9,
-      "height": 8,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_NavelRock",
-      "border_filepath": "data/layouts/NavelRock_LadderRoom1/border.bin",
-      "blockdata_filepath": "data/layouts/NavelRock_LadderRoom1/map.bin",
-      "layout_version": "emerald"
-    },
-    {
-      "id": "LAYOUT_NAVEL_ROCK_LADDER_ROOM2",
-      "name": "NavelRock_LadderRoom2_Layout",
-      "width": 9,
-      "height": 8,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_NavelRock",
-      "border_filepath": "data/layouts/NavelRock_LadderRoom2/border.bin",
-      "blockdata_filepath": "data/layouts/NavelRock_LadderRoom2/map.bin",
-      "layout_version": "emerald"
-    },
-    {
-      "id": "LAYOUT_NAVEL_ROCK_B1F",
-      "name": "NavelRock_B1F_Layout",
-      "width": 23,
-      "height": 11,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_NavelRock",
-      "border_filepath": "data/layouts/NavelRock_B1F/border.bin",
-      "blockdata_filepath": "data/layouts/NavelRock_B1F/map.bin",
-      "layout_version": "emerald"
-    },
-    {
-      "id": "LAYOUT_NAVEL_ROCK_FORK",
-      "name": "NavelRock_Fork_Layout",
-      "width": 27,
-      "height": 86,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_NavelRock",
-      "border_filepath": "data/layouts/NavelRock_Fork/border.bin",
-      "blockdata_filepath": "data/layouts/NavelRock_Fork/map.bin",
       "layout_version": "emerald"
     },
     {

@@ -433,6 +433,12 @@ PlayersHouse_1F_EventScript_GetSSTicketAndSeeLatiTV::
 	msgbox PlayersHouse_1F_Text_TicketFromBrineyCameForYou, MSGBOX_DEFAULT
 	giveitem ITEM_SS_TICKET
 	msgbox PlayersHouse_1F_Text_PortsInSlateportLilycove, MSGBOX_DEFAULT
+@ The ticket is MR. BRINEY's, but the letter that came in the same envelope is what sends
+@ the player out of HOENN: it is the only place the KANTO crossing is announced, and it
+@ names the port to sail from -- LILYCOVE, where the crossing's sailor waits. It rides in
+@ this scene because the scene already runs exactly once, on the way home from the LEAGUE.
+	msgbox PlayersHouse_1F_Text_SomethingElseInTheEnvelope, MSGBOX_DEFAULT
+	msgbox PlayersHouse_1F_Text_OaksLetterNamesVermilion, MSGBOX_DEFAULT
 	closemessage
 	delay 20
 	call_if_eq VAR_0x8008, MALE, PlayersHouse_1F_EventScript_MomApproachDadMale

@@ -24,7 +24,8 @@ struct FieldMoveInfo
     enum FieldMoveUnlockType unlockType:3;
     enum Move moveID:11;
     u32 partyMsgID:7;
-    u32 arg:8;
+    u32 arg:8;          // badge index within the Hoenn badge set
+    u32 kantoBadge:8;   // badge index within the Kanto badge set
     u32 hideIfLocked:1;
     u32 padding:3;
 };

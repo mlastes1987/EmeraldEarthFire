@@ -1,6 +1,8 @@
 #ifndef GUARD_EVENT_DATA_H
 #define GUARD_EVENT_DATA_H
 
+#include "constants/regions.h"
+
 void InitEventData(void);
 void ClearTempFieldEventData(void);
 void ClearDailyFlags(void);
@@ -45,5 +47,14 @@ extern u16 gSpecialVar_MonBoxPos;
 extern u16 gSpecialVar_Unused_0x8014;
 
 extern const u16 gBadgeFlags[NUM_BADGES];
+extern const u16 gKantoBadgeFlags[NUM_KANTO_BADGES];
+
+// Badges are per region: an Emerald build carries Hoenn's eight and Kanto's eight as two
+// separate sets, so these accessors take the region the player is actually in.
+u16 GetBadgeFlag(enum Region region, u32 index);
+bool32 HasBadge(enum Region region, u32 index);
+bool32 HasEveryBadgeInRegion(enum Region region);
+u32 CountBadges(enum Region region);
+u32 CountAllBadges(void);
 
 #endif // GUARD_EVENT_DATA_H

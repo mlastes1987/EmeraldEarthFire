@@ -1,6 +1,7 @@
 #include "global.h"
 #include "event_data.h"
 #include "pokedex.h"
+#include "regions.h"
 
 #define SPECIAL_FLAGS_SIZE  (NUM_SPECIAL_FLAGS / 8)  // 8 flags per byte
 #define TEMP_FLAGS_SIZE     (NUM_TEMP_FLAGS / 8)
@@ -47,6 +48,69 @@ const u16 gBadgeFlags[NUM_BADGES] =
     FLAG_BADGE07_GET,
     FLAG_BADGE08_GET,
 };
+
+// Kanto's badges. In a FireRed/LeafGreen build these names alias that build's own badge
+// flags, so this table is the same set twice; in an Emerald build it is the second, real
+// set. Keeping the table unconditional means no caller needs to know which build it is in.
+const u16 gKantoBadgeFlags[NUM_KANTO_BADGES] =
+{
+    FLAG_KANTO_BADGE01_GET,
+    FLAG_KANTO_BADGE02_GET,
+    FLAG_KANTO_BADGE03_GET,
+    FLAG_KANTO_BADGE04_GET,
+    FLAG_KANTO_BADGE05_GET,
+    FLAG_KANTO_BADGE06_GET,
+    FLAG_KANTO_BADGE07_GET,
+    FLAG_KANTO_BADGE08_GET,
+};
+
+static u32 BadgeCountForRegion(enum Region region)
+{
+    return (region == REGION_KANTO) ? NUM_KANTO_BADGES : NUM_BADGES;
+}
+
+u16 GetBadgeFlag(enum Region region, u32 index)
+{
+    if (index >= BadgeCountForRegion(region))
+        return 0;
+    if (region == REGION_KANTO)
+        return gKantoBadgeFlags[index];
+    return gBadgeFlags[index];
+}
+
+bool32 HasBadge(enum Region region, u32 index)
+{
+    return FlagGet(GetBadgeFlag(region, index)) != FALSE;
+}
+
+bool32 HasEveryBadgeInRegion(enum Region region)
+{
+    u32 i;
+
+    for (i = 0; i < BadgeCountForRegion(region); i++)
+    {
+        if (!HasBadge(region, i))
+            return FALSE;
+    }
+    return TRUE;
+}
+
+u32 CountBadges(enum Region region)
+{
+    u32 i, count = 0;
+
+    for (i = 0; i < BadgeCountForRegion(region); i++)
+    {
+        if (HasBadge(region, i))
+            count++;
+    }
+    return count;
+}
+
+u32 CountAllBadges(void)
+{
+    return CountBadges(REGION_HOENN) + CountBadges(REGION_KANTO);
+}
 
 void InitEventData(void)
 {

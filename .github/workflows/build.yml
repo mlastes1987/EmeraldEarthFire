@@ -199,12 +199,30 @@ jobs:
           TEST: 1
         run: make -j$(nproc) check
 
+  # The map tree is checked on its own as well as inside every ROM build (the ELF takes
+  # `map-tree-check` as an order-only prerequisite), so the failure is quick and names the map
+  # rather than surfacing as an assembler error thousands of lines later.
+  map-tree:
+    if: github.actor != 'allcontributors[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install python
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends python3
+
+      - name: Map tree consistency
+        run: make map-tree-check
+
   # Gate job: satisfies the "build" branch protection rule.
   # Passes only when all parallel build/test jobs succeed.
   build:
     if: github.actor != 'allcontributors[bot]'
     runs-on: ubuntu-latest
-    needs: [build-emerald, build-firered, build-leafgreen, release, test]
+    needs: [build-emerald, build-firered, build-leafgreen, release, test, map-tree]
     steps:
       - name: All builds passed
         run: echo "All builds and tests passed."

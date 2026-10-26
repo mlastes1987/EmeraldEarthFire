@@ -12,6 +12,7 @@
 #include "decoration.h"
 #include "decoration_inventory.h"
 #include "event_data.h"
+#include "regions.h"
 #include "event_object_movement.h"
 #include "event_scripts.h"
 #include "field_message_box.h"
@@ -1574,6 +1575,14 @@ static u32 Debug_CheckToggleFlags(u8 id)
                 break;
             }
         }
+        for (u32 i = 0; i < ARRAY_COUNT(gKantoBadgeFlags); i++)
+        {
+            if (!FlagGet(gKantoBadgeFlags[i]))
+            {
+                result = FALSE;
+                break;
+            }
+        }
         break;
     case DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_GAME_CLEAR:
         result = FlagGet(FLAG_SYS_GAME_CLEAR);
@@ -3026,17 +3035,22 @@ static void DebugAction_FlagsVars_ToggleFlyFlags(u8 taskId)
 
 static void DebugAction_FlagsVars_ToggleBadgeFlags(u8 taskId)
 {
-    if (FlagGet(gBadgeFlags[ARRAY_COUNT(gBadgeFlags) - 1]))
+    // Both regions' badges: sixteen in an Emerald build.
+    if (HasEveryBadgeInRegion(REGION_HOENN) && HasEveryBadgeInRegion(REGION_KANTO))
     {
         PlaySE(SE_PC_OFF);
         for (u32 i = 0; i < ARRAY_COUNT(gBadgeFlags); i++)
             FlagClear(gBadgeFlags[i]);
+        for (u32 i = 0; i < ARRAY_COUNT(gKantoBadgeFlags); i++)
+            FlagClear(gKantoBadgeFlags[i]);
     }
     else
     {
         PlaySE(SE_PC_LOGIN);
         for (u32 i = 0; i < ARRAY_COUNT(gBadgeFlags); i++)
             FlagSet(gBadgeFlags[i]);
+        for (u32 i = 0; i < ARRAY_COUNT(gKantoBadgeFlags); i++)
+            FlagSet(gKantoBadgeFlags[i]);
     }
 }
 
@@ -3161,9 +3175,33 @@ static void DebugSelectionStep_UpdateItem(u8 taskId, u8 digits, u32 min, u32 max
 
 UPDATE_GENERIC_INPUT(Quantity, Quantity)
 
+// The four event-ticket ferries are each gated on a FLAG_ENABLE_SHIP_* as well as on the ticket
+// item (see ScriptMenu_CreateLilycoveSSTidalMultichoice and the harbour sailors), and only a
+// Mystery Gift ever sets those flags. A ticket the debug menu hands out without its flag is a
+// berth that never opens, so every ticket given here brings its flag along - the same pair the
+// Mystery Gift scripts set. The islands that belong to the other region are flag 0 in this build,
+// as sLocationFlags notes above, and those entries are skipped rather than written to flag 0.
+static const struct { enum Item item; u16 flag; } sShipTicketFlags[] =
+{
+    { ITEM_EON_TICKET,    FLAG_ENABLE_SHIP_SOUTHERN_ISLAND },
+    { ITEM_MYSTIC_TICKET, FLAG_ENABLE_SHIP_NAVEL_ROCK },
+    { ITEM_AURORA_TICKET, FLAG_ENABLE_SHIP_BIRTH_ISLAND },
+    { ITEM_OLD_SEA_MAP,   FLAG_ENABLE_SHIP_FARAWAY_ISLAND },
+};
+
+static void Debug_EnableShipForHeldTickets(void)
+{
+    for (u32 i = 0; i < ARRAY_COUNT(sShipTicketFlags); i++)
+    {
+        if (sShipTicketFlags[i].flag != 0 && CheckBagHasItem(sShipTicketFlags[i].item, 1))
+            FlagSet(sShipTicketFlags[i].flag);
+    }
+}
+
 static bool32 DebugSelection_GiveItem_Complete(u8 taskId)
 {
     AddBagItem(DebugSelection_GetData(taskId, 0), DebugSelection_GetData(taskId, 1));
+    Debug_EnableShipForHeldTickets();
     DebugSelectionStep_ReturnToGiveMenu(taskId);
     PlaySE(SE_SUCCESS);
     return TRUE;
@@ -3760,6 +3798,10 @@ static void DebugAction_PCBag_Fill_PocketKeyItems(u8 taskId)
         if (GetItemPocket(itemId) == POCKET_KEY_ITEMS && CheckBagHasSpace(itemId, 1))
             AddBagItem(itemId, 1);
     }
+
+    // Four of those key items are event tickets; a ticket with no FLAG_ENABLE_SHIP_* behind it
+    // shows up at the harbour and sails nowhere.
+    Debug_EnableShipForHeldTickets();
 }
 
 static void DebugAction_PCBag_ClearBag(u8 taskId)
