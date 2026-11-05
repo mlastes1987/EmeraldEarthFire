@@ -209,10 +209,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install python
+      # map-tree-check invokes the normal Makefile setup, including host tools and
+      # generated headers, so it needs the same dependencies as the ROM jobs.
+      - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends python3
+          sudo apt-get install -y --no-install-recommends binutils-arm-none-eabi gcc-arm-none-eabi libnewlib-arm-none-eabi libpng-dev python3
 
       - name: Map tree consistency
         run: make map-tree-check
