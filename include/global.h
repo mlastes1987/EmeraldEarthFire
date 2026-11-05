@@ -272,6 +272,14 @@ struct SaveBlock3
 #if APRICORN_TREE_COUNT > 0
     u8 apricornTrees[NUM_APRICORN_TREE_BYTES];
 #endif
+#if !IS_FRLG
+    // Append after the legacy data. The current config keeps dexNavChain at offset 0
+    // and stores trainer flags in the reserved bytes of sectors 0 and 1. The first
+    // 108 trainer bytes retain their v1 positions; Kanto's 96 bytes are appended.
+    u16 trainerFlagsVersion ALIGNED(4);
+    u16 trainerFlagsChecksum;
+    u8 trainerFlags[NUM_TRAINER_FLAG_BYTES];
+#endif
 }; /* max size 1624 bytes */
 
 extern struct SaveBlock3 *gSaveBlock3Ptr;

@@ -4,6 +4,9 @@
 #include "constants/regions.h"
 
 void InitEventData(void);
+bool32 UpgradeTrainerFlagsSave(void);
+bool32 IsTrainerFlagsSaveValid(const struct SaveBlock3 *save);
+void PrepareTrainerFlagsForSave(void);
 void ClearTempFieldEventData(void);
 void ClearDailyFlags(void);
 void DisableNationalPokedex(void);

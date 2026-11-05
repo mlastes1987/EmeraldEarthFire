@@ -639,6 +639,9 @@ VermilionCity_EventScript_ProfOakStarterSentToPC::
 	end
 
 VermilionCity_EventScript_ProfOakReceivedStarter::
+	setvar VAR_KANTO_STARTER, 0
+	call_if_eq VAR_TEMP_TRANSFERRED_SPECIES, SPECIES_SQUIRTLE, VermilionCity_EventScript_RecordSquirtleStarter
+	call_if_eq VAR_TEMP_TRANSFERRED_SPECIES, SPECIES_CHARMANDER, VermilionCity_EventScript_RecordCharmanderStarter
 	playfanfare MUS_OBTAIN_ITEM
 	message VermilionCity_Text_OakStarterReceived
 	waitmessage
@@ -654,6 +657,14 @@ VermilionCity_EventScript_ProfOakStarterHandedOver::
 	msgbox VermilionCity_Text_OakRaiseItWell, MSGBOX_DEFAULT
 	release
 	end
+
+VermilionCity_EventScript_RecordSquirtleStarter::
+	setvar VAR_KANTO_STARTER, 1
+	return
+
+VermilionCity_EventScript_RecordCharmanderStarter::
+	setvar VAR_KANTO_STARTER, 2
+	return
 
 VermilionCity_EventScript_ProfOakStarterTaken::
 	msgbox VermilionCity_Text_OakHowIsYourStarter, MSGBOX_DEFAULT

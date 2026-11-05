@@ -269,6 +269,9 @@ static bool32 RecordedBattleToSave(struct RecordedBattleSave *battleSave, struct
 {
     memset(saveSector, 0, SECTOR_SIZE);
     memcpy(saveSector, battleSave, sizeof(*battleSave));
+#if !IS_FRLG
+    saveSector->usesRegionalTrainers = TRUE;
+#endif
 
     saveSector->checksum = CalcByteArraySum((void *)(saveSector), sizeof(*saveSector) - 4);
 
@@ -493,6 +496,17 @@ void SetPartiesFromRecordedSave(struct RecordedBattleSave *src)
     }
 }
 
+u16 RecordedBattle_GetPartnerTrainerId(const struct RecordedBattleSave *save)
+{
+#if !IS_FRLG
+    if (!save->usesRegionalTrainers
+     && save->partnerId >= MAX_TRAINERS_COUNT_EMERALD
+     && save->partnerId < MAX_TRAINERS_COUNT_EMERALD + PARTNER_COUNT)
+        return TRAINER_PARTNER(save->partnerId - MAX_TRAINERS_COUNT_EMERALD);
+#endif
+    return save->partnerId;
+}
+
 void SetVariablesForRecordedBattle(struct RecordedBattleSave *src)
 {
     bool8 var;
@@ -521,7 +535,7 @@ void SetVariablesForRecordedBattle(struct RecordedBattleSave *src)
     gBattleTypeFlags = src->battleFlags | BATTLE_TYPE_RECORDED;
     TRAINER_BATTLE_PARAM.opponentA = src->opponentA;
     TRAINER_BATTLE_PARAM.opponentB = src->opponentB;
-    gPartnerTrainerId = src->partnerId;
+    gPartnerTrainerId = RecordedBattle_GetPartnerTrainerId(src);
     gRecordedBattleMultiplayerId = src->multiplayerId;
     sLvlMode = gSaveBlock2Ptr->frontier.lvlMode;
     sFrontierFacility = src->frontierFacility;

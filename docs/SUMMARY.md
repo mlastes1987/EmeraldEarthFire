@@ -1,6 +1,8 @@
 # Summary
 
 - [README](./README.md)
+- [Emerald Earth Fire cleanup review](./project_review.md)
+- [Save compatibility](./save_compatibility.md)
 - [FEATURES](./FEATURES.md)
 - [Installation](./INSTALL.md)
     - [Setting up WSL1 (Legacy Portion)](./legacy_WSL1_INSTALL.md)

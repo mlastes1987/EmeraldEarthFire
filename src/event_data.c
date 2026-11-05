@@ -117,6 +117,78 @@ void InitEventData(void)
     memset(gSaveBlock1Ptr->flags, 0, sizeof(gSaveBlock1Ptr->flags));
     memset(gSaveBlock1Ptr->vars, 0, sizeof(gSaveBlock1Ptr->vars));
     memset(sSpecialFlags, 0, sizeof(sSpecialFlags));
+#if !IS_FRLG
+    memset(gSaveBlock3Ptr->trainerFlags, 0, sizeof(gSaveBlock3Ptr->trainerFlags));
+    PrepareTrainerFlagsForSave();
+#endif
+}
+
+#if !IS_FRLG
+static u16 TrainerFlagsChecksum(const u8 *flags, u32 size)
+{
+    u16 crc = 0xFFFF;
+    u32 i, bit;
+
+    // SaveBlock3's reserved sector bytes are not covered by the normal sector
+    // checksum, so protect the trainer bitset separately (CRC-16/CCITT-FALSE).
+    for (i = 0; i < size; i++)
+    {
+        crc ^= flags[i] << 8;
+        for (bit = 0; bit < 8; bit++)
+            crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
+    }
+    return crc;
+}
+#endif
+
+void PrepareTrainerFlagsForSave(void)
+{
+#if !IS_FRLG
+    gSaveBlock3Ptr->trainerFlagsVersion = TRAINER_FLAGS_SAVE_VERSION;
+    gSaveBlock3Ptr->trainerFlagsChecksum = TrainerFlagsChecksum(gSaveBlock3Ptr->trainerFlags, sizeof(gSaveBlock3Ptr->trainerFlags));
+#endif
+}
+
+bool32 IsTrainerFlagsSaveValid(const struct SaveBlock3 *save)
+{
+#if !IS_FRLG
+    if (save->trainerFlagsVersion == TRAINER_FLAGS_SAVE_VERSION)
+        return save->trainerFlagsChecksum == TrainerFlagsChecksum(save->trainerFlags, sizeof(save->trainerFlags));
+    if (save->trainerFlagsVersion == TRAINER_FLAGS_SAVE_VERSION_V1)
+        return save->trainerFlagsChecksum == TrainerFlagsChecksum(save->trainerFlags, LEGACY_TRAINER_FLAG_BYTES);
+
+    return save->trainerFlagsVersion == 0 && save->trainerFlagsChecksum == 0;
+#else
+    return TRUE;
+#endif
+}
+
+bool32 UpgradeTrainerFlagsSave(void)
+{
+#if !IS_FRLG
+    if (!IsTrainerFlagsSaveValid(gSaveBlock3Ptr))
+        return FALSE;
+    if (gSaveBlock3Ptr->trainerFlagsVersion == TRAINER_FLAGS_SAVE_VERSION)
+        return TRUE;
+
+    // Legacy saves wrote zeros after their four-byte SaveBlock3. Do not interpret
+    // an unknown version or a damaged header as legacy and silently replace data.
+    // Preserve the ambiguous legacy bits in BOTH stores. Never clear story flags
+    // or guess which event originally set a bit. Subsequent changes are independent.
+    if (gSaveBlock3Ptr->trainerFlagsVersion == 0)
+        memcpy(gSaveBlock3Ptr->trainerFlags,
+               &gSaveBlock1Ptr->flags[LEGACY_TRAINER_FLAGS_START / 8],
+               LEGACY_TRAINER_FLAG_BYTES);
+    // V0/v1 shared trainer IDs across regions. Preserve the recorded defeats in
+    // each region once, rather than resetting either region or guessing history.
+    memcpy(gSaveBlock3Ptr->trainerFlags + LEGACY_TRAINER_FLAG_BYTES,
+           gSaveBlock3Ptr->trainerFlags, KANTO_TRAINER_FLAG_BYTES);
+    // Previously Kanto rivals read Hoenn's starter. Keep that behavior for old
+    // saves until a new Oak gift explicitly records a different Kanto choice.
+    VarSet(VAR_KANTO_STARTER, VarGet(VAR_STARTER_MON));
+    PrepareTrainerFlagsForSave();
+#endif
+    return TRUE;
 }
 
 void ClearTempFieldEventData(void)
@@ -228,14 +300,15 @@ u16 *GetVarPointer(u16 id)
 {
     if (id < VARS_START)
         return NULL;
-    else if (id < SPECIAL_VARS_START)
+    else if (id <= VARS_END)
         return &gSaveBlock1Ptr->vars[id - VARS_START];
 #if TESTING
-    else if (id >= TESTING_VARS_START)
+    else if (id >= TESTING_VARS_START && id < TESTING_VARS_START + TEST_VARS_SIZE)
         return &sTestVars[id - TESTING_VARS_START];
 #endif // TESTING
-    else
+    else if (id >= SPECIAL_VARS_START && id <= SPECIAL_VARS_END)
         return gSpecialVars[id - SPECIAL_VARS_START];
+    return NULL;
 }
 
 u16 VarGet(u16 id)
@@ -272,14 +345,19 @@ u8 *GetFlagPointer(u16 id)
 {
     if (id == 0)
         return NULL;
-    else if (id < SPECIAL_FLAGS_START)
+#if !IS_FRLG
+    else if (id >= TRAINER_FLAGS_START && id <= TRAINER_FLAGS_END)
+        return &gSaveBlock3Ptr->trainerFlags[(id - TRAINER_FLAGS_START) / 8];
+#endif
+    else if (id < FLAGS_COUNT)
         return &gSaveBlock1Ptr->flags[id / 8];
 #if TESTING
-    else if (id >= TESTING_FLAGS_START)
+    else if (id >= TESTING_FLAGS_START && id < TESTING_FLAGS_START + TEST_FLAGS_SIZE * 8)
         return &sTestFlags[(id - TESTING_FLAGS_START) / 8];
 #endif // TESTING
-    else
+    else if (id >= SPECIAL_FLAGS_START && id <= SPECIAL_FLAGS_END)
         return &sSpecialFlags[(id - SPECIAL_FLAGS_START) / 8];
+    return NULL;
 }
 
 u8 FlagSet(u16 id)

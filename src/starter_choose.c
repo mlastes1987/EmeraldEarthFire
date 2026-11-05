@@ -349,9 +349,18 @@ static const struct SpriteTemplate sSpriteTemplate_StarterCircle =
 // .text
 u16 GetStarterPokemon(u16 chosenStarterId)
 {
-    if (chosenStarterId > STARTER_MON_COUNT)
+    if (chosenStarterId >= STARTER_MON_COUNT)
         chosenStarterId = 0;
     return sStarterMon[chosenStarterId];
+}
+
+u16 Script_GetKantoStarterPokemon(void)
+{
+    static const u16 kantoStarters[] = {SPECIES_BULBASAUR, SPECIES_SQUIRTLE, SPECIES_CHARMANDER};
+    u16 choice = VarGet(VAR_KANTO_STARTER);
+    if (choice >= ARRAY_COUNT(kantoStarters))
+        choice = 0;
+    return kantoStarters[choice];
 }
 
 static void VblankCB_StarterChoose(void)

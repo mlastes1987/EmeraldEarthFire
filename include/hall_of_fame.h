@@ -1,6 +1,9 @@
 #ifndef GUARD_HALL_OF_FAME_H
 #define GUARD_HALL_OF_FAME_H
 
+// Both regional screens read the same two saved sectors and record structure.
+#define HALL_OF_FAME_MAX_TEAMS 50
+
 struct HallofFameMon
 {
     u32 tid;

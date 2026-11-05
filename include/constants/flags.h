@@ -1342,15 +1342,21 @@
 #define FLAG_UNUSED_0x4FF                                           0x4FF // Unused Flag
 
 // Trainer Flags
-// Trainer flags occupy 0x500 - 0x85F, the last 9 of which are unused
+// Trainer flags use a separate SaveBlock3 bitset, not the story flags in SaveBlock1.
 // See constants/opponents.h. The values there + FLAG_TRAINER_FLAG_START are the flag IDs
 
-#define TRAINER_FLAGS_START                                         0x500
-#define TRAINER_FLAGS_END                                           (TRAINER_FLAGS_START + MAX_TRAINERS_COUNT - 1) // 0x85F
+#define LEGACY_TRAINER_FLAGS_START                                  0x500
+#define TRAINER_FLAGS_START                                         0x1000
+#define TRAINER_FLAGS_END                                           (TRAINER_FLAGS_START + MAX_TRAINERS_COUNT - 1) // 0x165F
+#define NUM_TRAINER_FLAG_BYTES                                      ((MAX_TRAINERS_COUNT + 7) / 8)
+#define LEGACY_TRAINER_FLAG_BYTES                                   (MAX_TRAINERS_COUNT_EMERALD / 8)
+#define KANTO_TRAINER_FLAG_BYTES                                    (MAX_TRAINERS_COUNT_FRLG / 8)
+#define TRAINER_FLAGS_SAVE_VERSION_V1                               0x5401
+#define TRAINER_FLAGS_SAVE_VERSION                                  0x5402
 
 // System Flags
 
-#define SYSTEM_FLAGS                                   (TRAINER_FLAGS_END + 1) // 0x860
+#define SYSTEM_FLAGS                                   0x860 // Preserve existing saved system/badge bits.
 
 #define FLAG_SYS_POKEMON_GET                         (SYSTEM_FLAGS + 0x0) // FLAG_0x860
 #define FLAG_SYS_POKEDEX_GET                         (SYSTEM_FLAGS + 0x1)
@@ -1538,7 +1544,7 @@
 #define FLAG_KANTO_BADGE07_GET                      (SYSTEM_FLAGS + 0x96) // was FLAG_UNUSED_0x8F6
 #define FLAG_KANTO_BADGE08_GET                      (SYSTEM_FLAGS + 0x97) // was FLAG_UNUSED_0x8F7
 #define NUM_KANTO_BADGES                            (1 + FLAG_KANTO_BADGE08_GET - FLAG_KANTO_BADGE01_GET)
-#define FLAG_UNUSED_0x8F8                           (SYSTEM_FLAGS + 0x98) // Unused Flag
+#define FLAG_KANTO_LEAGUE_CLEAR                     (SYSTEM_FLAGS + 0x98)
 #define FLAG_UNUSED_0x8F9                           (SYSTEM_FLAGS + 0x99) // Unused Flag
 #define FLAG_UNUSED_0x8FA                           (SYSTEM_FLAGS + 0x9A) // Unused Flag
 #define FLAG_UNUSED_0x8FB                           (SYSTEM_FLAGS + 0x9B) // Unused Flag
@@ -2460,5 +2466,16 @@
 #define TESTING_FLAG_UNUSED_7                   (TESTING_FLAGS_START + 0x7)
 #endif // TESTING
 
+
+// Session-only state, shared by both game versions. Never occupies a saved story or
+// trainer flag, and is cleared along with the other special flags on initialization.
+#define FLAG_DEXNAV_SEARCHING (SPECIAL_FLAGS_START + 0x6)
+
+#if IS_FRLG
+#define FLAG_KANTO_LEAGUE_CLEAR FLAG_SYS_GAME_CLEAR
+#define FLAG_KANTO_LEAGUE_REMATCH FLAG_IS_CHAMPION
+#else
+#define FLAG_KANTO_LEAGUE_REMATCH FLAG_KANTO_LEAGUE_CLEAR
+#endif
 
 #endif // GUARD_CONSTANTS_FLAGS_H

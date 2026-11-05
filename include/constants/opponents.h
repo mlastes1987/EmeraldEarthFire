@@ -871,8 +871,8 @@
 #define TRAINERS_COUNT                      TRAINERS_COUNT_FRLG
 #define MAX_TRAINERS_COUNT                  MAX_TRAINERS_COUNT_FRLG
 #else
-#define TRAINERS_COUNT                      TRAINERS_COUNT_EMERALD
-#define MAX_TRAINERS_COUNT                  MAX_TRAINERS_COUNT_EMERALD
+#define TRAINERS_COUNT                      (MAX_TRAINERS_COUNT_EMERALD + TRAINERS_COUNT_FRLG)
+#define MAX_TRAINERS_COUNT                  (MAX_TRAINERS_COUNT_EMERALD + MAX_TRAINERS_COUNT_FRLG)
 #endif
 #define TRAINER_PARTNER(partner)           (MAX_TRAINERS_COUNT + partner)
 

@@ -1,0 +1,229 @@
+#ifndef GUARD_SAVE_LAYOUT_H
+#define GUARD_SAVE_LAYOUT_H
+
+#include "global.h"
+#include "pokemon_storage_system.h"
+#include "save.h"
+
+// Emerald Earth Fire 16-badge baseline (commit 792f59470d), with the explicitly
+// versioned, append-only trainer extension below. SaveBlocks 1/2 and storage stay fixed.
+// Measured with ARM GCC, -mabi=apcs-gnu, before adding these checks.
+// Preserve this layout for current saves. Updating these values requires an explicit
+// compatibility decision; equal total sizes do not guarantee matching field offsets.
+// These checks cover top-level non-bitfield offsets and sizes, not nested semantics.
+
+#if !IS_FRLG
+#define CHECK_SAVE_SIZE(type, expected) \
+    STATIC_ASSERT(sizeof(struct type) == (expected), type##_SaveSizeChanged)
+#define CHECK_SAVE_FIELD(type, field, offset, size) \
+    STATIC_ASSERT(offsetof(struct type, field) == (offset), type##_##field##_SaveOffsetChanged); \
+    STATIC_ASSERT(sizeof(((struct type *)0)->field) == (size), type##_##field##_SaveSizeChanged)
+
+CHECK_SAVE_SIZE(SaveBlock1, 0x3CD0);
+CHECK_SAVE_FIELD(SaveBlock1, pos, 0x0, 0x4);
+CHECK_SAVE_FIELD(SaveBlock1, location, 0x4, 0x8);
+CHECK_SAVE_FIELD(SaveBlock1, continueGameWarp, 0xC, 0x8);
+CHECK_SAVE_FIELD(SaveBlock1, dynamicWarp, 0x14, 0x8);
+CHECK_SAVE_FIELD(SaveBlock1, lastHealLocation, 0x1C, 0x8);
+CHECK_SAVE_FIELD(SaveBlock1, escapeWarp, 0x24, 0x8);
+CHECK_SAVE_FIELD(SaveBlock1, savedMusic, 0x2C, 0x2);
+CHECK_SAVE_FIELD(SaveBlock1, weather, 0x2E, 0x1);
+CHECK_SAVE_FIELD(SaveBlock1, weatherCycleStage, 0x2F, 0x1);
+CHECK_SAVE_FIELD(SaveBlock1, flashLevel, 0x30, 0x1);
+CHECK_SAVE_FIELD(SaveBlock1, mapLayoutId, 0x32, 0x2);
+CHECK_SAVE_FIELD(SaveBlock1, mapView, 0x34, 0x200);
+CHECK_SAVE_FIELD(SaveBlock1, playerPartyCount, 0x234, 0x1);
+CHECK_SAVE_FIELD(SaveBlock1, playerParty, 0x238, 0x258);
+CHECK_SAVE_FIELD(SaveBlock1, money, 0x490, 0x4);
+CHECK_SAVE_FIELD(SaveBlock1, coins, 0x494, 0x2);
+CHECK_SAVE_FIELD(SaveBlock1, registeredItem, 0x496, 0x2);
+CHECK_SAVE_FIELD(SaveBlock1, pcItems, 0x498, 0xC8);
+CHECK_SAVE_FIELD(SaveBlock1, bag, 0x560, 0x2E8);
+CHECK_SAVE_FIELD(SaveBlock1, pokeblocks, 0x848, 0x140);
+CHECK_SAVE_FIELD(SaveBlock1, berryBlenderRecords, 0x988, 0x6);
+CHECK_SAVE_FIELD(SaveBlock1, unused_9C2, 0x98E, 0x2);
+CHECK_SAVE_FIELD(SaveBlock1, dailySeed, 0x990, 0x4);
+CHECK_SAVE_FIELD(SaveBlock1, trainerRematchStepCounter, 0x994, 0x2);
+CHECK_SAVE_FIELD(SaveBlock1, trainerRematches, 0x996, 0x64);
+CHECK_SAVE_FIELD(SaveBlock1, objectEvents, 0x9FC, 0x240);
+CHECK_SAVE_FIELD(SaveBlock1, objectEventTemplates, 0xC3C, 0x600);
+CHECK_SAVE_FIELD(SaveBlock1, flags, 0x123C, 0x12C);
+CHECK_SAVE_FIELD(SaveBlock1, vars, 0x1368, 0x234);
+CHECK_SAVE_FIELD(SaveBlock1, gameStats, 0x159C, 0x100);
+CHECK_SAVE_FIELD(SaveBlock1, berryTrees, 0x169C, 0x400);
+CHECK_SAVE_FIELD(SaveBlock1, secretBases, 0x1A9C, 0xC80);
+CHECK_SAVE_FIELD(SaveBlock1, playerRoomDecorations, 0x271C, 0xC);
+CHECK_SAVE_FIELD(SaveBlock1, playerRoomDecorationPositions, 0x2728, 0xC);
+CHECK_SAVE_FIELD(SaveBlock1, decorationDesks, 0x2734, 0xA);
+CHECK_SAVE_FIELD(SaveBlock1, decorationChairs, 0x273E, 0xA);
+CHECK_SAVE_FIELD(SaveBlock1, decorationPlants, 0x2748, 0xA);
+CHECK_SAVE_FIELD(SaveBlock1, decorationOrnaments, 0x2752, 0x1E);
+CHECK_SAVE_FIELD(SaveBlock1, decorationMats, 0x2770, 0x1E);
+CHECK_SAVE_FIELD(SaveBlock1, decorationPosters, 0x278E, 0xA);
+CHECK_SAVE_FIELD(SaveBlock1, decorationDolls, 0x2798, 0x28);
+CHECK_SAVE_FIELD(SaveBlock1, decorationCushions, 0x27C0, 0xA);
+CHECK_SAVE_FIELD(SaveBlock1, tvShows, 0x27CC, 0x384);
+CHECK_SAVE_FIELD(SaveBlock1, pokeNews, 0x2B50, 0x40);
+CHECK_SAVE_FIELD(SaveBlock1, outbreakPokemonSpecies, 0x2B90, 0x2);
+CHECK_SAVE_FIELD(SaveBlock1, outbreakLocationMapNum, 0x2B92, 0x1);
+CHECK_SAVE_FIELD(SaveBlock1, outbreakLocationMapGroup, 0x2B93, 0x1);
+CHECK_SAVE_FIELD(SaveBlock1, outbreakPokemonLevel, 0x2B94, 0x1);
+CHECK_SAVE_FIELD(SaveBlock1, outbreakUnused1, 0x2B95, 0x1);
+CHECK_SAVE_FIELD(SaveBlock1, outbreakUnused2, 0x2B96, 0x2);
+CHECK_SAVE_FIELD(SaveBlock1, outbreakPokemonMoves, 0x2B98, 0x8);
+CHECK_SAVE_FIELD(SaveBlock1, outbreakUnused3, 0x2BA0, 0x1);
+CHECK_SAVE_FIELD(SaveBlock1, outbreakPokemonProbability, 0x2BA1, 0x1);
+CHECK_SAVE_FIELD(SaveBlock1, outbreakDaysLeft, 0x2BA2, 0x2);
+CHECK_SAVE_FIELD(SaveBlock1, gabbyAndTyData, 0x2BA4, 0xC);
+CHECK_SAVE_FIELD(SaveBlock1, easyChatProfile, 0x2BB0, 0xC);
+CHECK_SAVE_FIELD(SaveBlock1, easyChatBattleStart, 0x2BBC, 0xC);
+CHECK_SAVE_FIELD(SaveBlock1, easyChatBattleWon, 0x2BC8, 0xC);
+CHECK_SAVE_FIELD(SaveBlock1, easyChatBattleLost, 0x2BD4, 0xC);
+CHECK_SAVE_FIELD(SaveBlock1, mail, 0x2BE0, 0x240);
+CHECK_SAVE_FIELD(SaveBlock1, unlockedTrendySayings, 0x2E20, 0x5);
+CHECK_SAVE_FIELD(SaveBlock1, oldMan, 0x2E28, 0x40);
+CHECK_SAVE_FIELD(SaveBlock1, dewfordTrends, 0x2E68, 0x28);
+CHECK_SAVE_FIELD(SaveBlock1, contestWinners, 0x2E90, 0x1A0);
+CHECK_SAVE_FIELD(SaveBlock1, daycare, 0x3030, 0x120);
+CHECK_SAVE_FIELD(SaveBlock1, linkBattleRecords, 0x3150, 0x58);
+CHECK_SAVE_FIELD(SaveBlock1, giftRibbons, 0x31A8, 0x7);
+CHECK_SAVE_FIELD(SaveBlock1, padding, 0x31AF, 0x4);
+CHECK_SAVE_FIELD(SaveBlock1, externalEventData, 0x31B3, 0x14);
+CHECK_SAVE_FIELD(SaveBlock1, externalEventFlags, 0x31C7, 0x15);
+CHECK_SAVE_FIELD(SaveBlock1, roamer, 0x31DC, 0x1C);
+CHECK_SAVE_FIELD(SaveBlock1, enigmaBerry, 0x31F8, 0x34);
+CHECK_SAVE_FIELD(SaveBlock1, mysteryGift, 0x322C, 0x36C);
+CHECK_SAVE_FIELD(SaveBlock1, dexSeen, 0x3598, 0x81);
+CHECK_SAVE_FIELD(SaveBlock1, dexCaught, 0x3619, 0x81);
+CHECK_SAVE_FIELD(SaveBlock1, trainerHillTimes, 0x369C, 0x10);
+CHECK_SAVE_FIELD(SaveBlock1, ramScript, 0x36AC, 0x3EC);
+CHECK_SAVE_FIELD(SaveBlock1, recordMixingGift, 0x3A98, 0x10);
+CHECK_SAVE_FIELD(SaveBlock1, lilycoveLady, 0x3AA8, 0x40);
+CHECK_SAVE_FIELD(SaveBlock1, trainerNameRecords, 0x3AE8, 0xF0);
+CHECK_SAVE_FIELD(SaveBlock1, registeredTexts, 0x3BD8, 0xD2);
+CHECK_SAVE_FIELD(SaveBlock1, trainerHill, 0x3CAC, 0xC);
+CHECK_SAVE_FIELD(SaveBlock1, waldaPhrase, 0x3CB8, 0x18);
+CHECK_SAVE_SIZE(SaveBlock2, 0xF2C);
+CHECK_SAVE_FIELD(SaveBlock2, playerName, 0x0, 0x8);
+CHECK_SAVE_FIELD(SaveBlock2, playerGender, 0x8, 0x1);
+CHECK_SAVE_FIELD(SaveBlock2, specialSaveWarpFlags, 0x9, 0x1);
+CHECK_SAVE_FIELD(SaveBlock2, playerTrainerId, 0xA, 0x4);
+CHECK_SAVE_FIELD(SaveBlock2, playTimeHours, 0xE, 0x2);
+CHECK_SAVE_FIELD(SaveBlock2, playTimeMinutes, 0x10, 0x1);
+CHECK_SAVE_FIELD(SaveBlock2, playTimeSeconds, 0x11, 0x1);
+CHECK_SAVE_FIELD(SaveBlock2, playTimeVBlanks, 0x12, 0x1);
+CHECK_SAVE_FIELD(SaveBlock2, optionsButtonMode, 0x13, 0x1);
+CHECK_SAVE_FIELD(SaveBlock2, pokedex, 0x18, 0x78);
+CHECK_SAVE_FIELD(SaveBlock2, filler_90, 0x90, 0x8);
+CHECK_SAVE_FIELD(SaveBlock2, localTimeOffset, 0x98, 0x8);
+CHECK_SAVE_FIELD(SaveBlock2, lastBerryTreeUpdate, 0xA0, 0x8);
+CHECK_SAVE_FIELD(SaveBlock2, gcnLinkFlags, 0xA8, 0x4);
+CHECK_SAVE_FIELD(SaveBlock2, encryptionKey, 0xAC, 0x4);
+CHECK_SAVE_FIELD(SaveBlock2, playerApprentice, 0xB0, 0x2C);
+CHECK_SAVE_FIELD(SaveBlock2, apprentices, 0xDC, 0x110);
+CHECK_SAVE_FIELD(SaveBlock2, berryCrush, 0x1EC, 0x10);
+CHECK_SAVE_FIELD(SaveBlock2, pokeJump, 0x1FC, 0x10);
+CHECK_SAVE_FIELD(SaveBlock2, berryPick, 0x20C, 0x10);
+CHECK_SAVE_FIELD(SaveBlock2, hallRecords1P, 0x21C, 0x360);
+CHECK_SAVE_FIELD(SaveBlock2, hallRecords2P, 0x57C, 0xA8);
+CHECK_SAVE_FIELD(SaveBlock2, contestLinkResults, 0x624, 0x28);
+CHECK_SAVE_FIELD(SaveBlock2, frontier, 0x64C, 0x8E0);
+// Versioned append-only extension; the old four-byte prefix and all other blocks
+// retain their existing positions. V2 appends Kanto bits after the v1 prefix.
+CHECK_SAVE_SIZE(SaveBlock3, 0xD4);
+CHECK_SAVE_FIELD(SaveBlock3, dexNavChain, 0x0, 0x1);
+CHECK_SAVE_FIELD(SaveBlock3, trainerFlagsVersion, 0x4, 0x2);
+CHECK_SAVE_FIELD(SaveBlock3, trainerFlagsChecksum, 0x6, 0x2);
+CHECK_SAVE_FIELD(SaveBlock3, trainerFlags, 0x8, 0xCC);
+STATIC_ASSERT(sizeof(struct SaveBlock3) <= 2 * SAVE_BLOCK_3_CHUNK_SIZE, TrainerFlagsFitTwoSectors);
+STATIC_ASSERT(TRAINER_FLAGS_START == 0x1000, TrainerFlagsNamespaceChanged);
+STATIC_ASSERT(TRAINER_FLAGS_SAVE_VERSION == 0x5402, TrainerFlagsFormatVersionChanged);
+STATIC_ASSERT(MAX_TRAINERS_COUNT_EMERALD == 864 && MAX_TRAINERS_COUNT_FRLG == 768, RegionalTrainerCapacityChanged);
+STATIC_ASSERT(TRAINER_FLAGS_START % 8 == 0, TrainerFlagsMustBeByteAligned);
+STATIC_ASSERT(TRAINER_FLAGS_START >= FLAGS_COUNT && TRAINER_FLAGS_END < SPECIAL_FLAGS_START, TrainerStoryFlagsOverlap);
+STATIC_ASSERT(SYSTEM_FLAGS == 0x860 && FLAGS_COUNT == 0x960, LegacyStoryFlagsMoved);
+CHECK_SAVE_SIZE(PokemonStorage, 0x8560);
+CHECK_SAVE_FIELD(PokemonStorage, currentBox, 0x0, 0x1);
+CHECK_SAVE_FIELD(PokemonStorage, boxes, 0x4, 0x8340);
+CHECK_SAVE_FIELD(PokemonStorage, boxNames, 0x8344, 0x7E);
+CHECK_SAVE_FIELD(PokemonStorage, boxWallpapers, 0x83C2, 0xE);
+CHECK_SAVE_FIELD(PokemonStorage, fusions, 0x83D0, 0x190);
+CHECK_SAVE_SIZE(SaveSector, 0x1000);
+CHECK_SAVE_FIELD(SaveSector, data, 0x0, 0xF80);
+CHECK_SAVE_FIELD(SaveSector, saveBlock3Chunk, 0xF80, 0x74);
+CHECK_SAVE_FIELD(SaveSector, id, 0xFF4, 0x2);
+CHECK_SAVE_FIELD(SaveSector, checksum, 0xFF6, 0x2);
+CHECK_SAVE_FIELD(SaveSector, signature, 0xFF8, 0x4);
+CHECK_SAVE_FIELD(SaveSector, counter, 0xFFC, 0x4);
+
+#undef CHECK_SAVE_FIELD
+#undef CHECK_SAVE_SIZE
+
+// Remapping a saved Kanto variable to a different slot also breaks compatibility.
+STATIC_ASSERT(VAR_DEXNAV_SPECIES == 0x409B, VAR_DEXNAV_SPECIES_SaveIdChanged);
+STATIC_ASSERT(VAR_DEXNAV_STEP_COUNTER == 0x409D, VAR_DEXNAV_STEP_COUNTER_SaveIdChanged);
+STATIC_ASSERT(VAR_KANTO_STARTER == 0x40A1, VAR_KANTO_STARTER_SaveIdChanged);
+STATIC_ASSERT(FLAG_KANTO_LEAGUE_CLEAR == 0x8F8, KantoLeagueFlagMoved);
+STATIC_ASSERT(VAR_DEOXYS_INTERACTION_NUM == 0x4111, VAR_DEOXYS_INTERACTION_NUM_SaveIdChanged);
+STATIC_ASSERT(VAR_DEOXYS_INTERACTION_STEP_COUNTER == 0x4117, VAR_DEOXYS_INTERACTION_STEP_COUNTER_SaveIdChanged);
+STATIC_ASSERT(VAR_EGG_BRAG_STATE == 0x4107, VAR_EGG_BRAG_STATE_SaveIdChanged);
+STATIC_ASSERT(VAR_ELEVATOR_FLOOR == 0x4114, VAR_ELEVATOR_FLOOR_SaveIdChanged);
+STATIC_ASSERT(VAR_HERACROSS_SIZE_RECORD == 0x4112, VAR_HERACROSS_SIZE_RECORD_SaveIdChanged);
+STATIC_ASSERT(VAR_HOF_BRAG_STATE == 0x4108, VAR_HOF_BRAG_STATE_SaveIdChanged);
+STATIC_ASSERT(VAR_LINK_WIN_BRAG_STATE == 0x4106, VAR_LINK_WIN_BRAG_STATE_SaveIdChanged);
+STATIC_ASSERT(VAR_MAGIKARP_SIZE_RECORD == 0x4110, VAR_MAGIKARP_SIZE_RECORD_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_CINNABAR_ISLAND == 0x40FA, VAR_MAP_SCENE_CINNABAR_ISLAND_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_CINNABAR_ISLAND_2 == 0x40A8, VAR_MAP_SCENE_CINNABAR_ISLAND_2_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_CINNABAR_ISLAND_POKEMON_LAB_EXPERIMENT_ROOM_WHICH_FOSSIL == 0x40FB, VAR_MAP_SCENE_CINNABAR_ISLAND_POKEMON_LAB_EXPERIMENT_ROOM_WHICH_FOSSIL_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_FIVE_ISLAND_RESORT_GORGEOUS == 0x40E5, VAR_MAP_SCENE_FIVE_ISLAND_RESORT_GORGEOUS_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_FOUR_ISLAND == 0x40DB, VAR_MAP_SCENE_FOUR_ISLAND_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_INDIGO_PLATEAU_EXTERIOR == 0x40DC, VAR_MAP_SCENE_INDIGO_PLATEAU_EXTERIOR_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_PALLET_TOWN_OAK == 0x4105, VAR_MAP_SCENE_PALLET_TOWN_OAK_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_PALLET_TOWN_RIVALS_HOUSE == 0x4100, VAR_MAP_SCENE_PALLET_TOWN_RIVALS_HOUSE_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_POKEMON_TOWER_2F == 0x40FF, VAR_MAP_SCENE_POKEMON_TOWER_2F_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_ROCKET_WAREHOUSE == 0x40BB, VAR_MAP_SCENE_ROCKET_WAREHOUSE_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_ROUTE16 == 0x40FE, VAR_MAP_SCENE_ROUTE16_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_ROUTE22 == 0x4102, VAR_MAP_SCENE_ROUTE22_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_SEAFOAM_ISLANDS_B4F == 0x40FC, VAR_MAP_SCENE_SEAFOAM_ISLANDS_B4F_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_SEVEN_ISLAND_HOUSE_ROOM1 == 0x40F9, VAR_MAP_SCENE_SEVEN_ISLAND_HOUSE_ROOM1_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_SILPH_CO_11F == 0x40FD, VAR_MAP_SCENE_SILPH_CO_11F_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_SIX_ISLAND_POKEMON_CENTER_1F == 0x40B8, VAR_MAP_SCENE_SIX_ISLAND_POKEMON_CENTER_1F_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_THREE_ISLAND == 0x40F8, VAR_MAP_SCENE_THREE_ISLAND_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_TRAINER_TOWER == 0x40F7, VAR_MAP_SCENE_TRAINER_TOWER_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_VIRIDIAN_CITY_GYM_DOOR == 0x4119, VAR_MAP_SCENE_VIRIDIAN_CITY_GYM_DOOR_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_VIRIDIAN_CITY_MART == 0x4101, VAR_MAP_SCENE_VIRIDIAN_CITY_MART_SaveIdChanged);
+STATIC_ASSERT(VAR_MAP_SCENE_VIRIDIAN_CITY_OLD_MAN == 0x4104, VAR_MAP_SCENE_VIRIDIAN_CITY_OLD_MAN_SaveIdChanged);
+STATIC_ASSERT(VAR_MASSAGE_COOLDOWN_STEP_COUNTER == 0x4118, VAR_MASSAGE_COOLDOWN_STEP_COUNTER_SaveIdChanged);
+STATIC_ASSERT(VAR_RESORT_GOREGEOUS_STEP_COUNTER == 0x4116, VAR_RESORT_GOREGEOUS_STEP_COUNTER_SaveIdChanged);
+STATIC_ASSERT(VAR_RESORT_GORGEOUS_REQUESTED_MON == 0x4115, VAR_RESORT_GORGEOUS_REQUESTED_MON_SaveIdChanged);
+STATIC_ASSERT(VAR_RESORT_GORGEOUS_REWARD == 0x4113, VAR_RESORT_GORGEOUS_REWARD_SaveIdChanged);
+STATIC_ASSERT(VAR_TRAINER_CARD_MON_ICON_1 == 0x410E, VAR_TRAINER_CARD_MON_ICON_1_SaveIdChanged);
+STATIC_ASSERT(VAR_TRAINER_CARD_MON_ICON_2 == 0x410D, VAR_TRAINER_CARD_MON_ICON_2_SaveIdChanged);
+STATIC_ASSERT(VAR_TRAINER_CARD_MON_ICON_3 == 0x410C, VAR_TRAINER_CARD_MON_ICON_3_SaveIdChanged);
+STATIC_ASSERT(VAR_TRAINER_CARD_MON_ICON_4 == 0x410B, VAR_TRAINER_CARD_MON_ICON_4_SaveIdChanged);
+STATIC_ASSERT(VAR_TRAINER_CARD_MON_ICON_5 == 0x410A, VAR_TRAINER_CARD_MON_ICON_5_SaveIdChanged);
+STATIC_ASSERT(VAR_TRAINER_CARD_MON_ICON_6 == 0x4109, VAR_TRAINER_CARD_MON_ICON_6_SaveIdChanged);
+STATIC_ASSERT(VAR_TRAINER_CARD_MON_ICON_TINT_IDX == 0x410F, VAR_TRAINER_CARD_MON_ICON_TINT_IDX_SaveIdChanged);
+STATIC_ASSERT(VAR_VERMILION_CITY_TICKET_CHECK_TRIGGER == 0x4103, VAR_VERMILION_CITY_TICKET_CHECK_TRIGGER_SaveIdChanged);
+
+// Keep both regions' existing badge bits in place.
+STATIC_ASSERT(FLAG_BADGE01_GET == 0x867, FLAG_BADGE01_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_BADGE02_GET == 0x868, FLAG_BADGE02_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_BADGE03_GET == 0x869, FLAG_BADGE03_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_BADGE04_GET == 0x86A, FLAG_BADGE04_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_BADGE05_GET == 0x86B, FLAG_BADGE05_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_BADGE06_GET == 0x86C, FLAG_BADGE06_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_BADGE07_GET == 0x86D, FLAG_BADGE07_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_BADGE08_GET == 0x86E, FLAG_BADGE08_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_KANTO_BADGE01_GET == 0x8F0, FLAG_KANTO_BADGE01_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_KANTO_BADGE02_GET == 0x8F1, FLAG_KANTO_BADGE02_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_KANTO_BADGE03_GET == 0x8F2, FLAG_KANTO_BADGE03_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_KANTO_BADGE04_GET == 0x8F3, FLAG_KANTO_BADGE04_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_KANTO_BADGE05_GET == 0x8F4, FLAG_KANTO_BADGE05_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_KANTO_BADGE06_GET == 0x8F5, FLAG_KANTO_BADGE06_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_KANTO_BADGE07_GET == 0x8F6, FLAG_KANTO_BADGE07_GET_SaveIdChanged);
+STATIC_ASSERT(FLAG_KANTO_BADGE08_GET == 0x8F7, FLAG_KANTO_BADGE08_GET_SaveIdChanged);
+
+#endif // !IS_FRLG
+
+#endif // GUARD_SAVE_LAYOUT_H

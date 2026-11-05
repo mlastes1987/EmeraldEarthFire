@@ -15,15 +15,21 @@ and Kanto map state would overwrite each other in a combined ROM.
 This script does two things, both only for non-FRLG builds:
 
 1. Assigns every flag in the "FRLG flags" section a unique id taken from the free
-   Emerald flag range (0x500..0x91F), which is far larger than the number of Kanto
+   Emerald story flag range (0x500..0x85F), which is larger than the number of Kanto
    flags, so no save-block size change is needed. The original FireRed id is kept as
    a trailing comment.
 
 2. Emits a `#if !IS_FRLG` remap block in vars.h that moves each Kanto variable whose
    id collides with a Hoenn variable into a free variable slot.
 
-Both operations are deterministic, so re-running the script after editing the map data
-or the FRLG constants regenerates exactly the same ids.
+Both operations are deterministic for the same inputs. Editing map data or constants
+can change assignments, so inspect the report before applying a regenerated mapping.
+
+The range above is safe only with the separate versioned trainer flag store in
+SaveBlock3 (TRAINER_FLAGS_START = 0x1000). Earlier builds used the same bits for both
+stories and trainer defeats. Never apply this allocation to an unmodified base.
+Changing referenced variables may also change generated assignments: inspect --check
+and preserve the IDs pinned in include/save_layout.h when maintaining existing saves.
 
 Run from the repository root:
 
@@ -43,10 +49,10 @@ FLAGS_FRLG_H = 'include/constants/flags_frlg.h'
 VARS_H = 'include/constants/vars.h'
 VARS_FRLG_H = 'include/constants/vars_frlg.h'
 
-# Free Emerald flag ids live in 0x500..0x91F (the region between the last Emerald hide
-# flag and the daily-flag block). FLAGS_COUNT is DAILY_FLAGS_END + 1 == 0x960.
+# Story allocation uses the former trainer range only. Trainer defeat bits now live
+# in SaveBlock3 at logical IDs 0x1000+. Never allocate into saved system/badge flags.
 KANTO_FLAG_START = 0x500
-KANTO_FLAG_END = 0x91F
+KANTO_FLAG_END = 0x85F
 
 # Save-block variable ids live above VARS_START. The end of the range is read from
 # vars.h so the script keeps working after the table is extended for a combined

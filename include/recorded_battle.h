@@ -24,7 +24,7 @@ struct RecordedBattleSave
     u16 battleScene:1;
     u16 textSpeed:3;
     u16 playersGender:4; // 1 bit per player; please don't hate me
-    u16 padding:1;
+    u16 usesRegionalTrainers:1; // Former zero padding; distinguishes legacy partner IDs.
     u64 AI_scripts[MAX_BATTLERS_COUNT];
     u8 recordMixFriendName[PLAYER_NAME_LENGTH + 1];
     u8 recordMixFriendClass;
@@ -71,6 +71,7 @@ bool32 CanCopyRecordedBattleSaveData(void);
 bool32 MoveRecordedBattleToSaveData(void);
 void SetPartiesFromRecordedSave(struct RecordedBattleSave *src);
 void SetVariablesForRecordedBattle(struct RecordedBattleSave *);
+u16 RecordedBattle_GetPartnerTrainerId(const struct RecordedBattleSave *save);
 void PlayRecordedBattle(void (*CB2_After)(void));
 u8 GetRecordedBattleFrontierFacility(void);
 u8 GetRecordedBattleFronterBrainSymbol(void);

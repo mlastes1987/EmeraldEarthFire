@@ -1,4 +1,46 @@
-# About `pokeemerald-expansion`
+# Emerald Earth Fire
+
+Emerald Earth Fire is a Pokémon Emerald decompilation ROM hack based on RHH's
+`pokeemerald-expansion` 1.17.0. The intended adventure covers Hoenn's eight badges and
+Elite Four, followed by Kanto's eight badges and Elite Four.
+
+The Emerald target contains the cross-region integration: a post-Hoenn-League crossing
+from Lilycove to Vermilion, a Kanto starter gift from Professor Oak, separate regional
+badge flags, and access to the Sevii Islands. The Emerald ROM builds successfully,
+and focused save, trainer-data, and progression tests pass headlessly. Hoenn and Kanto
+use distinct trainer IDs and defeat records, separate from story flags. Full in-game progression remains unverified; see the cleanup review.
+
+## Project documentation
+
+- [Cleanup review and verification priorities](docs/project_review.md)
+- [Kanto integration notes and known limitations](KANTO_IN_EMERALD.md)
+- [Build environment setup](INSTALL.md)
+- [Engine features](FEATURES.md) and [upstream credits](CREDITS.md)
+
+## Building this project
+
+After setting up the toolchain described in `INSTALL.md`, run these commands from the
+repository root in your build shell (for example, WSL):
+
+```sh
+make                  # Emerald.gba: the two-region adventure
+make map-tree-check   # Check map data and references
+```
+
+The alternative `make firered` and `make leafgreen` targets produce `EmeraldFire.gba`
+and `EmeraldEarth.gba`, respectively. They select the FRLG map build; they are not the
+two-region Emerald target.
+
+Current 16-badge Emerald saves upgrade automatically to an independent trainer-flag
+store while retaining existing story data and save-block offsets. Already-ambiguous
+legacy bits are preserved rather than guessed. Saves predating the Kanto variable relocation
+are not converted. See [save compatibility](docs/save_compatibility.md), including the
+restriction on saving again with an older ROM after upgrading.
+
+The original engine overview follows. Its installation, contribution, and community
+guidance describes the upstream project.
+
+# About `pokeemerald-expansion` (upstream engine)
 
 ![Gif that shows debugging functionality that is unique to pokeemerald-expansion such as rerolling Trainer ID, Cheat Start, PC from Debug Menu, Debug PC Fill, Pokémon Sprite Visualizer, Debug Warp to Map, and Battle Debug Menu](https://github.com/user-attachments/assets/cf9dfbee-4c6b-4bca-8e0a-07f116ef891c) ![Gif that shows overworld functionality that is unique to pokeemerald-expansion such as indoor running, BW2 style map popups, overworld followers, DNA Splicers, Gen 1 style fishing, OW Item descriptions, Quick Run from Battle, Use Last Ball, Wild Double Battles, and Catch from EXP](https://github.com/user-attachments/assets/383af243-0904-4d41-bced-721492fbc48e) ![Gif that shows off a number of modern Pokémon battle mechanics happening in the pokeemerald-expansion engine: 2 vs 1 battles, modern Pokémon, items, moves, abilities, fully customizable opponents and partners, Trainer Slides, and generational gimmicks](https://github.com/user-attachments/assets/50c576bc-415e-4d66-a38f-ad712f3316be)
 

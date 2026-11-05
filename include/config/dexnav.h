@@ -6,23 +6,13 @@
 
 // Flag/var defines
 
-#if GAME_VERSION == EMERALD
-
-#define DN_FLAG_SEARCHING             0 // Searching for mon
-#define DN_FLAG_DEXNAV_GET            0 // DexNav shows in start menu
-#define DN_FLAG_DETECTOR_MODE         0 // Allow player to find hidden mons
-#define DN_VAR_SPECIES                0 // Registered DexNav species
-#define DN_VAR_STEP_COUNTER           0 // Steps for finding hidden Pokémon
-
-#else
-
-#define DN_FLAG_SEARCHING             0 // Searching for mon
-#define DN_FLAG_DEXNAV_GET            0 // DexNav shows in start menu
-#define DN_FLAG_DETECTOR_MODE         0 // Allow player to find hidden mons
-#define DN_VAR_SPECIES                0 // Registered DexNav species
-#define DN_VAR_STEP_COUNTER           0 // Steps for finding hidden Pokémon
-
-#endif
+// A search is session-only; persisting it could restore a flag without its allocated
+// search data. Access and detector mode unlock with the Pokédex, including old saves.
+#define DN_FLAG_SEARCHING             FLAG_DEXNAV_SEARCHING
+#define DN_FLAG_DEXNAV_GET            FLAG_SYS_POKEDEX_GET
+#define DN_FLAG_DETECTOR_MODE         FLAG_SYS_POKEDEX_GET
+#define DN_VAR_SPECIES                VAR_DEXNAV_SPECIES
+#define DN_VAR_STEP_COUNTER           VAR_DEXNAV_STEP_COUNTER
 
 // Search parameters
 #define DEXNAV_TIMEOUT                  15  // 15 seconds is the time out. Max of 1092 seconds allowed

@@ -1,12 +1,19 @@
 # Traveling Hoenn → Kanto on an Emerald build
 
-Status: the build layer, the flag/variable relocation, the event-script assembly gate, the
-Lilycove↔Vermilion sea route, the **post-game SEVII excursion** (section 6) and the
-**two-region sixteen-badge scheme** (section 7) are implemented. The build's own scripting
-tools were compiled and the real `preproc | cpp | preproc -ie` script pipeline replayed —
-and the touched C files re-run through the build's own `cpp | preproc -i` path — so the
-symbol-level claims below are measured rather than counted by hand — but **no ARM
-assembler, linker or ROM build has been run**; see [Limitations](#limitations).
+> Review note (November 4, 2026): this document includes historical measurements and
+> comparisons against an earlier `HEAD`. For current findings and priorities, see the
+> [cleanup review](docs/project_review.md). Equal save-block sizes do not preserve field
+> offsets or prove compatibility with older saves.
+> The supported baseline is now the current 16-badge Emerald layout, retained and
+> guarded as described in [save compatibility](docs/save_compatibility.md).
+
+Status (November 5, 2026): the regular Emerald ROM builds with ARM GCC in WSL, and all
+targeted save, trainer-data, and migration tests pass in headless mGBA. DexNav's zero IDs, the missing
+FRLG tileset definitions, and the Navel Rock transition-label mismatch are fixed.
+The detailed measurements below describe earlier development snapshots. Full gameplay
+progression remains unverified. The story/trainer overlap is fixed with a versioned,
+independent regional trainer stores and v0/v1 legacy migration;
+see the [current cleanup review](docs/project_review.md).
 
 ---
 
@@ -44,7 +51,7 @@ Hoenn's, so a single save can hold sixteen badges (section 7).
 | All 421 Kanto maps + 344 FRLG layouts exist as data | `data/maps/*_Frlg`, `data/layouts/layouts.json` |
 | Kanto region map + Sevii subregion maps | `src/data/region_map/region_map_layout_kanto.h`, `..._sevii123/45/67.h` |
 | Region-aware Town Map | `GetRegionMapType()`, `GetMapSecIdAt()` in [region_map.c](src/region_map.c) |
-| FRLG tilesets | `src/data/tilesets/headers.h` — 44 `*_Frlg` tilesets, **not** version-gated |
+| FRLG tilesets | Emerald now includes FRLG graphics, metatiles, and headers alongside Hoenn's. The 62 missing tileset definitions are fixed; see the [cleanup review](docs/project_review.md). |
 | FRLG music | `sound/song_table.inc` — every `mus_rg_*` song, incl. `mus_rg_pallet` |
 | FRLG trainers | `src/data/trainers_frlg.h` (auto-generated, built in all versions) |
 | Every special usable in every build | `data/specials.inc` defines `SPECIAL_*` and builds `gSpecials` unconditionally, so every `special`/`specialvar` target has to exist in an Emerald build too |
@@ -210,7 +217,7 @@ than argued.
 
 ---
 
-## 3. Kanto flags (fixed)
+## 3. Kanto flags and independent trainer storage
 
 `include/constants/flags.h` gates on `IS_FRLG`. In the non-FRLG branch a `// FRLG flags`
 section declared 762 Kanto/Sevii flags as literal `0`. That is a deliberate-looking
@@ -230,7 +237,7 @@ not hide every NPC — the calls are no-ops.)
 ### Fix
 
 [migration_scripts/relocate_kanto_defines.py](migration_scripts/relocate_kanto_defines.py)
-assigns every flag in that section a unique id from the free Emerald flag range, in FireRed
+assigned every flag in that section an id in what was incorrectly treated as a free range, in FireRed
 id order so the numbering stays traceable:
 
 ```
@@ -244,15 +251,23 @@ Flag id layout, for reference:
 | --- | --- |
 | `0x000`–`0x01F` | temporary flags |
 | `0x050`–`0x4FE` | Emerald hide flags |
-| **`0x500`–`0x85F`** | **free — 864 ids; the Kanto flags now occupy 0x500–0x7F9 (762)** |
+| **`0x500`–`0x85F`** | **Kanto story allocations at 0x500–0x7F9; formerly also trainer defeat bits.** |
 | `0x860`–`0x91F` | `SYSTEM_FLAGS` |
 | `0x920`–`0x95F` | daily flags (`FLAGS_COUNT` = `0x960`) |
 | `0x4000`+ | special flags (separate array) |
+| `0x1000`–`0x165F` | regional trainer defeat flags (versioned SaveBlock3 array, format v2) |
 
 Verification: 762 names → 762 unique ids, **0 Kanto flag left at `0`**, 0 name shared by two
 ids, 0 real id collisions among all 1813 flat `FLAG_*` definitions in the file, and every
 id inside `0x500`–`0x7F9` so nothing reaches `SYSTEM_FLAGS` at `0x860`. No save-block size
 change was needed.
+
+**Correction and fix, November 5:** the flat `FLAG_*` name check missed trainer flags
+calculated as `TRAINER_FLAGS_START + trainerId`. Trainers now use logical IDs at
+`0x1000` with independent storage, while Kanto story IDs and saved system flags stay
+put. Legacy saves copy the old shared bits into the trainer store once, preserving
+story data; they cannot reconstruct which event originally set an ambiguous bit.
+See the [migration design](docs/save_compatibility.md#trainer-flags-and-one-time-migration).
 
 ---
 
@@ -279,11 +294,14 @@ excluded): 254 names need 254 ids, 213 were occupied, so the table genuinely had
 ### Fix
 
 - `include/constants/vars.h`: extend `VARS_END` from `0x40FF` to `0x4119` (282 slots) **for
-  non-FRLG builds only**; FRLG keeps `0x40FF` so its save layout is untouched.
+  non-FRLG builds only**; FRLG keeps `0x40FF`, but its save layout is still affected by
+  the shared filler-removal configuration below.
 - `include/config/save.h`: `FREE_EXTRA_SEEN_FLAGS_SAVEBLOCK1 TRUE`, which frees exactly 52
   bytes of a field `global.h` itself labels *"Previously Dex Flags, feel free to remove."*
-- 26 extra slots × 2 bytes = 52 bytes. **Net `sizeof(struct SaveBlock1)` change: 0**, so
-  `RomHeader::saveBlock1Size` is unchanged and existing saves still load. The 26 is chosen
+- 26 extra slots × 2 bytes = 52 bytes. The intended net `sizeof(struct SaveBlock1)`
+  change is 0 for Emerald, but this does **not** establish old-save compatibility:
+  removing the earlier filler shifts fields before the expanded variable table.
+  `RomHeader::saveBlock1Size` alone cannot detect that. The 26 is chosen
   for that arithmetic, not for the number of ids in use — if you move one endpoint, move the
   other to match.
 - The script emits an `#if !IS_FRLG` block in `vars.h` that `#undef`s and re-points the 41
@@ -1005,14 +1023,11 @@ no `devkitARM` and no `make` here, so nothing below covers assembly, linking, or
 
 ## Limitations
 
-- **No ROM was assembled or linked.** This machine has no `devkitARM` and no `make`
-  (devkitPro is not installed and the WSL distros are stopped), so `as`, `ld` and `gcc` for
-  ARM never ran. Everything above is static: it proves symbol *definitions* and *references*
-  line up, that the map/layout data is consistent, and now also that the assembler-level
-  conditionals resolve the way a build needs them to — which is where all four blockers were.
-  It does **not** prove the ROM assembles, links, boots, or that the ferry changes maps
-  correctly. Run `make clean && make -j$(nproc)` and then `make firered` / `make leafgreen`
-  in your devkitPro environment.
+- **Build verification now exists; a full playthrough does not.** On November 5,
+  ARM GCC in WSL built and linked `Emerald.gba`, and targeted save, trainer-data, and migration tests
+  passed headlessly. These checks do not verify ferry travel, rendered map tiles,
+  regional story progression, or a complete two-League adventure. The FireRed and
+  LeafGreen targets have not been rebuilt in this follow-up.
 - The symbol audit does not model macro *expansion*. Names that appear only as arguments to
   an assembler macro (`.byte SCR_OP_ADDCOINS`, `msgbox ..., MSGBOX_NPC`) stay "unresolved" in
   its report even though `as` accepts them; that fixed residual of 235 names is why the
@@ -1021,8 +1036,10 @@ no `devkitARM` and no `make` here, so nothing below covers assembly, linking, or
   whether a C function exists for every script `special` is still argued from the
   unconditional `gSpecials` table rather than measured.
 - `sizeof(struct SaveBlock1) <= 4 × 3968` is enforced by a `STATIC_ASSERT` in
-  [save.c](src/save.c). The change is arithmetically neutral (section 4), but that is
-  arithmetic, not a measurement.
+  [save.c](src/save.c). ARM measurements now confirm 15,568 bytes, with field offsets
+  locked by [save_layout.h](include/save_layout.h). This retains the current 16-badge
+  SaveBlock1/2 byte format. A versioned SaveBlock3 extension separates trainer defeats
+  from story flags, with legacy migration; pre-Kanto saves are not converted.
 - Wild encounters, trainer flags and Kanto side-quests have not been play-tested.
 
 ## Still open

@@ -226,15 +226,19 @@ const union AnimCmd *const gAnims_Trainer[] ={
     sAnim_GeneralFrame0,
 };
 
-#if !TESTING
+#if TESTING
+// Keep the real data available to integration tests; battle tests use their mocks.
+const struct Trainer gActualTrainers[DIFFICULTY_COUNT][TRAINERS_COUNT] =
+#else
 const struct Trainer gTrainers[DIFFICULTY_COUNT][TRAINERS_COUNT] =
+#endif
 {
 #if IS_FRLG
 #include "data/trainers_frlg.h"
 #else
 #include "data/trainers.h"
+#include "data/trainers_frlg.h"
 #endif
 };
-#endif
 
 #include "data/text/follower_messages.h"

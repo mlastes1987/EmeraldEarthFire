@@ -264,13 +264,17 @@
 #define VAR_PETALBURG_WOODS_STATE                        0x4098
 #define VAR_LILYCOVE_CONTEST_LOBBY_STATE                 0x4099
 #define VAR_RUSTURF_TUNNEL_STATE                         0x409A
-#define VAR_UNUSED_0x409B                                0x409B // Unused Var
+#define VAR_DEXNAV_SPECIES                               0x409B // Registered DexNav species/environment; previously unused
 #define VAR_ELITE_4_STATE                                0x409C
-#define VAR_UNUSED_0x409D                                0x409D // Unused Var
+#define VAR_DEXNAV_STEP_COUNTER                          0x409D // DexNav hidden encounter steps; previously unused
 #define VAR_MOSSDEEP_SPACE_CENTER_STAIR_GUARD_STATE      0x409E
 #define VAR_MOSSDEEP_SPACE_CENTER_STATE                  0x409F
 #define VAR_SLATEPORT_HARBOR_STATE                       0x40A0
-#define VAR_UNUSED_0x40A1                                0x40A1 // Unused var
+#if IS_FRLG
+#define VAR_KANTO_STARTER                                VAR_STARTER_MON
+#else
+#define VAR_KANTO_STARTER                                0x40A1 // 0=Bulbasaur, 1=Squirtle, 2=Charmander
+#endif
 #define VAR_SEAFLOOR_CAVERN_STATE                        0x40A2
 #define VAR_CABLE_CAR_STATION_STATE                      0x40A3
 #define VAR_SAFARI_ZONE_STATE                            0x40A4  // 0: In or out of SZ, 1: Player exiting SZ, 2: Player entering SZ
@@ -371,11 +375,12 @@
 // the range to 0x4119 (26 extra slots, 52 bytes). That is exactly the 52 bytes reclaimed
 // in SaveBlock1 by enabling FREE_EXTRA_SEEN_FLAGS_SAVEBLOCK1 in
 // include/config/save.h, so sizeof(struct SaveBlock1) - and therefore
-// RomHeader::saveBlock1Size - is byte-for-byte unchanged and existing saves keep
-// loading. The extent of the range is therefore fixed by that arithmetic and not by how
-// many Kanto ids happen to be in use today: if you change one endpoint, change the other
-// to match, or SaveBlock1 grows and existing saves stop loading.
-// FRLG builds keep the original 0x4000..0x40FF range so their save layout is untouched.
+// RomHeader::saveBlock1Size - is unchanged in size. This does NOT preserve pre-Kanto
+// field offsets. The current 16-badge layout is intentionally retained for existing
+// saves from that build, and include/save_layout.h locks its field offsets and sizes.
+// Do not change this range or the filler config without a save conversion plan.
+// FRLG builds keep the original 0x4000..0x40FF range, but the shared save config still
+// removes the filler there. Its previous save layout is not preserved either.
 #if IS_FRLG
 #define VARS_END                                         0x40FF
 #else

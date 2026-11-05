@@ -98,6 +98,9 @@ bool8 EnterHallOfFame(void)
     bool8 *r7;
     int i;
     bool8 gaveAtLeastOneRibbon;
+#if !IS_FRLG
+    FlagSet(FLAG_KANTO_LEAGUE_CLEAR);
+#endif
     HealPlayerParty();
     if (FlagGet(FLAG_SYS_GAME_CLEAR) == TRUE)
     {
