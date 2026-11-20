@@ -22,6 +22,13 @@ Professor Birch offers three starters from different generations when you begin 
 
 Later, Professor Oak's gift in Vermilion City offers Bulbasaur, Charmander, or Squirtle.
 
+## New game conveniences
+
+- DexNav appears in the Start menu once Professor Birch gives you the Pokédex.
+- A new game starts with **35,000 Pokédollars**.
+- Your bedroom PC starts stocked with **1 Potion, 999 Rare Candies, 999 Master Balls,
+  300 PP Max, 1 Exp. Share, and 1 Dowsing Machine**.
+
 ## v0.4-beta title screen
 
 ![Emerald EarthFire title screen with Rayquaza against a red sky and the Press Start prompt](docs/images/earth-fire-v0.4-beta/title-screen-v0.4-beta.png)

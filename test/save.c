@@ -5,6 +5,9 @@
 #include "config/dexnav.h"
 #include "battle_setup.h"
 #include "load_save.h"
+#include "item.h"
+#include "money.h"
+#include "new_game.h"
 #include "agb_flash.h"
 #include "gba/flash_internal.h"
 #include "test/test.h"
@@ -46,6 +49,35 @@ TEST("PokemonStorage size matches the supported save layout")
 #undef T_POKEMONSTORAGE_SIZE
 
 #if !IS_FRLG
+TEST("New game stocks the PC and unlocks DexNav with the Pokedex")
+{
+    FlagSet(FLAG_DEXNAV_SEARCHING);
+    FlagSet(FLAG_SYS_POKEDEX_GET);
+    VarSet(VAR_DEXNAV_SPECIES, SPECIES_PIKACHU);
+    VarSet(VAR_DEXNAV_STEP_COUNTER, 20);
+
+    NewGameInitData();
+
+    EXPECT_EQ(GetMoney(&gSaveBlock1Ptr->money), 35000);
+    EXPECT_EQ(CountUsedPCItemSlots(), 6);
+    EXPECT(CheckPCHasItem(ITEM_POTION, 1));
+    EXPECT(CheckPCHasItem(ITEM_RARE_CANDY, 999));
+    EXPECT(CheckPCHasItem(ITEM_MASTER_BALL, 999));
+    EXPECT(CheckPCHasItem(ITEM_PP_MAX, 300));
+    EXPECT(CheckPCHasItem(ITEM_EXP_SHARE, 1));
+    EXPECT(CheckPCHasItem(ITEM_DOWSING_MACHINE, 1));
+    EXPECT(!FlagGet(FLAG_SYS_POKEDEX_GET));
+    EXPECT(!FlagGet(DN_FLAG_DEXNAV_GET));
+    EXPECT(!FlagGet(DN_FLAG_DETECTOR_MODE));
+    EXPECT(!FlagGet(DN_FLAG_SEARCHING));
+    EXPECT_EQ(VarGet(DN_VAR_SPECIES), SPECIES_NONE);
+    EXPECT_EQ(VarGet(DN_VAR_STEP_COUNTER), 0);
+
+    FlagSet(FLAG_SYS_POKEDEX_GET);
+    EXPECT(FlagGet(DN_FLAG_DEXNAV_GET));
+    EXPECT(FlagGet(DN_FLAG_DETECTOR_MODE));
+}
+
 TEST("Current 16-badge save bytes retain Hoenn and Kanto event state")
 {
     // Independent raw-byte fixture in the supported on-disk layout. This checks
