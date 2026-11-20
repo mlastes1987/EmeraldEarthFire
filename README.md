@@ -10,6 +10,18 @@ badge flags, and access to the Sevii Islands. The Emerald ROM builds successfull
 and focused save, trainer-data, and progression tests pass headlessly. Hoenn and Kanto
 use distinct trainer IDs and defeat records, separate from story flags. Full in-game progression remains unverified; see the cleanup review.
 
+## Starter Pokémon
+
+Professor Birch offers three starters from different generations when you begin in Hoenn.
+
+| Type | Hoenn starter | Debut generation |
+| --- | --- | --- |
+| Grass | Sprigatito | IX |
+| Fire | Chimchar | IV |
+| Water | Sobble | VIII |
+
+Later, Professor Oak's gift in Vermilion City offers Bulbasaur, Charmander, or Squirtle.
+
 ## v0.4-beta title screen
 
 ![Emerald EarthFire title screen with Rayquaza against a red sky and the Press Start prompt](docs/images/earth-fire-v0.4-beta/title-screen-v0.4-beta.png)
