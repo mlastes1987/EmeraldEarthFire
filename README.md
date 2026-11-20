@@ -10,8 +10,14 @@ badge flags, and access to the Sevii Islands. The Emerald ROM builds successfull
 and focused save, trainer-data, and progression tests pass headlessly. Hoenn and Kanto
 use distinct trainer IDs and defeat records, separate from story flags. Full in-game progression remains unverified; see the cleanup review.
 
+## v0.4-beta title screen
+
+![Emerald EarthFire title screen with Rayquaza against a red sky and the Press Start prompt](docs/images/earth-fire-v0.4-beta/title-screen-v0.4-beta.png)
+![Rayquaza title animation with the pk87 v0.4-beta label visible between flashes of the Press Start prompt](docs/images/earth-fire-v0.4-beta/title-screen-v0.4-beta-version-label.png)
+
 ## Project documentation
 
+- [Emerald Earth Fire v0.4-beta changelog](docs/changelogs/earth-fire-v0.4-beta.md)
 - [Cleanup review and verification priorities](docs/project_review.md)
 - [Kanto integration notes and known limitations](KANTO_IN_EMERALD.md)
 - [Build environment setup](INSTALL.md)

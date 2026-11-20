@@ -18,10 +18,12 @@
 #include "sound.h"
 #include "sprite.h"
 #include "task.h"
+#include "text.h"
 #include "scanline_effect.h"
 #include "gpu_regs.h"
 #include "trig.h"
 #include "graphics.h"
+#include "util.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
 
@@ -29,14 +31,22 @@ enum {
     TAG_VERSION = 1000,
     TAG_PRESS_START_COPYRIGHT,
     TAG_LOGO_SHINE,
+    TAG_BUILD_LABEL,
 };
 
-#define VERSION_BANNER_RIGHT_TILEOFFSET 64
-#define VERSION_BANNER_LEFT_X 98
-#define VERSION_BANNER_RIGHT_X 162
+#define VERSION_BANNER_RIGHT_TILEOFFSET 32
+#define VERSION_BANNER_LEFT_X (DISPLAY_WIDTH / 2 - 32)
+#define VERSION_BANNER_RIGHT_X (DISPLAY_WIDTH / 2 + 32)
 #define VERSION_BANNER_Y 2
-#define VERSION_BANNER_Y_GOAL 66
+#define VERSION_BANNER_Y_GOAL 74
 #define START_BANNER_X 128
+#define PRESS_START_Y 108
+#define COPYRIGHT_Y 148
+#define BUILD_LABEL_Y ((PRESS_START_Y + COPYRIGHT_Y) / 2)
+#define BUILD_LABEL_WIDTH 64
+#define BUILD_LABEL_HEIGHT 32
+#define BUILD_LABEL_FONT FONT_SMALL_NARROWER
+#define BUILD_LABEL_FONT_TOP_PADDING 4
 
 #define CLEAR_SAVE_BUTTON_COMBO (B_BUTTON | SELECT_BUTTON | DPAD_UP)
 #define RESET_RTC_BUTTON_COMBO (B_BUTTON | SELECT_BUTTON | DPAD_LEFT)
@@ -66,10 +76,11 @@ static const u32 sTitleScreenRayquazaGfx[] = INCGFX_U32("graphics/title_screen/r
 static const u32 sTitleScreenRayquazaTilemap[] = INCGFX_U32("graphics/title_screen/rayquaza.bin", ".smolTM");
 static const u32 sTitleScreenLogoShineGfx[] = INCGFX_U32("graphics/title_screen/logo_shine.png", ".4bpp.smol");
 static const u32 sTitleScreenCloudsGfx[] = INCGFX_U32("graphics/title_screen/clouds.png", ".4bpp.smol");
+static const u16 sTitleScreenBackdropColor = RGB(14, 2, 5);
 
 
 
-// Used to blend "Emerald Version" as it passes over over the Pokémon banner.
+// Used to blend the version banner as it passes over the Pokémon banner.
 // Also used by the intro to blend the Game Freak name/logo in and out as they appear and disappear
 const u16 gTitleScreenAlphaBlend[64] =
 {
@@ -114,7 +125,7 @@ static const struct OamData sVersionBannerLeftOamData =
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
     .mosaic = FALSE,
-    .bpp = ST_OAM_8BPP,
+    .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(64x32),
     .x = 0,
     .matrixNum = 0,
@@ -131,7 +142,7 @@ static const struct OamData sVersionBannerRightOamData =
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
     .mosaic = FALSE,
-    .bpp = ST_OAM_8BPP,
+    .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(64x32),
     .x = 0,
     .matrixNum = 0,
@@ -182,14 +193,20 @@ static const struct SpriteTemplate sVersionBannerRightSpriteTemplate =
     .callback = SpriteCB_VersionBannerRight,
 };
 
-static const struct CompressedSpriteSheet sSpriteSheet_EmeraldVersion[] =
+static const struct CompressedSpriteSheet sSpriteSheet_EarthFireTitle[] =
 {
     {
-        .data = gTitleScreenEmeraldVersionGfx,
-        .size = 0x1000,
+        .data = gTitleScreenEarthFireTitleGfx,
+        .size = 0x800,
         .tag = TAG_VERSION
     },
     {},
+};
+
+static const struct SpritePalette sSpritePalette_EarthFireTitle =
+{
+    .data = gTitleScreenEarthFireTitlePal,
+    .tag = TAG_VERSION,
 };
 
 static const struct OamData sOamData_CopyrightBanner =
@@ -305,6 +322,26 @@ static const struct SpritePalette sSpritePalette_PressStart[] =
         .tag = TAG_PRESS_START_COPYRIGHT
     },
     {},
+};
+
+static const u8 sText_BuildLabel[] = _("pk87 v0.4-beta");
+static const u8 sBuildLabelTextColors[] = {0, 5, 1}; // Transparent, white, and black in the banner palette.
+static const u32 sBuildLabelBlankTiles[BUILD_LABEL_WIDTH * BUILD_LABEL_HEIGHT / 8] = {0};
+
+static const struct SpriteSheet sSpriteSheet_BuildLabel =
+{
+    .data = sBuildLabelBlankTiles,
+    .size = sizeof(sBuildLabelBlankTiles),
+    .tag = TAG_BUILD_LABEL,
+};
+
+static const struct SpriteTemplate sBuildLabelSpriteTemplate =
+{
+    .tileTag = TAG_BUILD_LABEL,
+    .paletteTag = TAG_PRESS_START_COPYRIGHT,
+    .oam = &sVersionBannerLeftOamData,
+    .anims = gDummySpriteAnimTable,
+    .callback = SpriteCallbackDummy,
 };
 
 static const struct OamData sPokemonLogoShineOamData =
@@ -443,6 +480,22 @@ static void CreateCopyrightBanner(s16 x, s16 y)
     }
 }
 
+static void CreateBuildLabel(void)
+{
+    u8 spriteId = CreateSprite(&sBuildLabelSpriteTemplate, DISPLAY_WIDTH / 2, BUILD_LABEL_Y, 0);
+    if (spriteId != MAX_SPRITES)
+    {
+        s32 width = GetStringWidth(BUILD_LABEL_FONT, sText_BuildLabel, -1);
+        u8 height = GetFontAttribute(BUILD_LABEL_FONT, FONTATTR_MAX_LETTER_HEIGHT);
+        u8 left = width < BUILD_LABEL_WIDTH ? (BUILD_LABEL_WIDTH - width) / 2 : 0;
+        u8 top = (BUILD_LABEL_HEIGHT - height) / 2 - BUILD_LABEL_FONT_TOP_PADDING;
+
+        SetupSpritesForTextPrinting(&spriteId, NULL, 1, 1);
+        AddSpriteTextPrinterParameterized3(spriteId, BUILD_LABEL_FONT, left, top,
+                                           sBuildLabelTextColors, 0, sText_BuildLabel);
+    }
+}
+
 #undef sAnimate
 #undef sTimer
 
@@ -466,8 +519,6 @@ static void SpriteCB_PokemonLogoShine(struct Sprite *sprite)
         // color will change, in addition to the shine sprite moving.
         if (sprite->sMode != SHINE_MODE_SINGLE_NO_BG_COLOR)
         {
-            u16 backgroundColor;
-
             if (sprite->x < DISPLAY_WIDTH / 2)
             {
                 // Brighten background color
@@ -485,17 +536,15 @@ static void SpriteCB_PokemonLogoShine(struct Sprite *sprite)
                     sprite->sBgColor--;
             }
 
-            backgroundColor = _RGB(sprite->sBgColor, sprite->sBgColor, sprite->sBgColor);
-
-            // Flash the background green for 4 frames of movement.
+            // Flash the background coral for 4 frames of movement.
             // Otherwise use the updating color.
             if (sprite->x == DISPLAY_WIDTH / 2 + (3 * SHINE_SPEED)
              || sprite->x == DISPLAY_WIDTH / 2 + (4 * SHINE_SPEED)
              || sprite->x == DISPLAY_WIDTH / 2 + (5 * SHINE_SPEED)
              || sprite->x == DISPLAY_WIDTH / 2 + (6 * SHINE_SPEED))
-                gPlttBufferFaded[0] = RGB(24, 31, 12);
+                gPlttBufferFaded[0] = RGB(31, 15, 11);
             else
-                gPlttBufferFaded[0] = backgroundColor;
+                BlendPalette(0, 1, sprite->sBgColor / 2, RGB(31, 20, 16));
         }
 
         sprite->x += SHINE_SPEED;
@@ -503,7 +552,7 @@ static void SpriteCB_PokemonLogoShine(struct Sprite *sprite)
     else
     {
         // Sprite has moved fully offscreen
-        gPlttBufferFaded[0] = RGB_BLACK;
+        gPlttBufferFaded[0] = sTitleScreenBackdropColor;
         DestroySprite(sprite);
     }
 }
@@ -598,6 +647,7 @@ void CB2_InitTitleScreen(void)
         DecompressDataWithHeaderVram(gTitleScreenPokemonLogoGfx, (void *)(BG_CHAR_ADDR(0)));
         DecompressDataWithHeaderVram(gTitleScreenPokemonLogoTilemap, (void *)(BG_SCREEN_ADDR(9)));
         LoadPalette(gTitleScreenBgPalettes, BG_PLTT_ID(0), 15 * PLTT_SIZE_4BPP);
+        LoadPalette(&sTitleScreenBackdropColor, 0, sizeof(sTitleScreenBackdropColor));
         // bg3
         DecompressDataWithHeaderVram(sTitleScreenRayquazaGfx, (void *)(BG_CHAR_ADDR(2)));
         DecompressDataWithHeaderVram(sTitleScreenRayquazaTilemap, (void *)(BG_SCREEN_ADDR(26)));
@@ -609,10 +659,11 @@ void CB2_InitTitleScreen(void)
         ResetSpriteData();
         FreeAllSpritePalettes();
         gReservedSpritePaletteCount = 9;
-        LoadCompressedSpriteSheet(&sSpriteSheet_EmeraldVersion[0]);
+        LoadCompressedSpriteSheet(&sSpriteSheet_EarthFireTitle[0]);
         LoadCompressedSpriteSheet(&sSpriteSheet_PressStart[0]);
         LoadCompressedSpriteSheet(&sPokemonLogoShineSpriteSheet[0]);
-        LoadPalette(gTitleScreenEmeraldVersionPal, OBJ_PLTT_ID(0), PLTT_SIZE_4BPP);
+        LoadSpriteSheet(&sSpriteSheet_BuildLabel);
+        LoadSpritePalette(&sSpritePalette_EarthFireTitle);
         LoadSpritePalette(&sSpritePalette_PressStart[0]);
         gMain.state = 2;
         break;
@@ -755,8 +806,9 @@ static void Task_TitleScreenPhase2(u8 taskId)
                                     | DISPCNT_BG1_ON
                                     | DISPCNT_BG2_ON
                                     | DISPCNT_OBJ_ON);
-        CreatePressStartBanner(START_BANNER_X, 108);
-        CreateCopyrightBanner(START_BANNER_X, 148);
+        CreatePressStartBanner(START_BANNER_X, PRESS_START_Y);
+        CreateBuildLabel();
+        CreateCopyrightBanner(START_BANNER_X, COPYRIGHT_Y);
         if (QUICKSTART && QUICKSTART_HUD)
             CreateQuickstartHud();
         gTasks[taskId].tBg1Y = 0;

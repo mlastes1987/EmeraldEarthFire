@@ -2,6 +2,7 @@
 
 - [README](./README.md)
 - [Emerald Earth Fire cleanup review](./project_review.md)
+- [Emerald Earth Fire v0.4-beta changelog](./changelogs/earth-fire-v0.4-beta.md)
 - [Save compatibility](./save_compatibility.md)
 - [FEATURES](./FEATURES.md)
 - [Installation](./INSTALL.md)
